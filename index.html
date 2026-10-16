@@ -604,7 +604,11 @@ const ptLayer=L.layerGroup().addTo(map);
 $("ovPoints").addEventListener("change",e=>e.target.checked?ptLayer.addTo(map):map.removeLayer(ptLayer));
 // Kleur per persoon: Matthew en Natanaël groen, Natasha en Sjanaz roze
 const MENSEN={"Matthew":"#2e8b3e","Natanaël":"#2e8b3e","Natasha":"#d63384","Sjanaz":"#d63384"};
-const kleurVan=p=>MENSEN[p.door]||"#6b7a74";
+// Afwatering/riolering altijd rood (soort of een vinkje daarover); de rest in de kleur van de persoon
+const AFWATERING_ROOD="#e3120b";
+const AFWATERING_TAGS=new Set(["goot begroeid","afval in goot","geen goot","duiker dicht","beschadigde/verstopte kokers","water staat stil","water op weg"]);
+const isAfwatering=p=>p.soort==="Afwatering / water"||(p.tags||[]).some(t=>AFWATERING_TAGS.has(t));
+const kleurVan=p=>isAfwatering(p)?AFWATERING_ROOD:MENSEN[p.door]||"#6b7a74";
 const badge=p=>`<b>${p.nr}</b>${p.door?`<i>${esc(p.door[0].toUpperCase())}</i>`:""}${p.ernst?`<s class="d${esc(p.ernst)}"></s>`:""}`;
 // Symbool per soort (lijnen in de stijl van Tabler Icons). "Parklocatie" is de oude naam van Parkeerplek.
 const soortNaam=s=>s==="Parklocatie"?"Parkeerplek":s||"Overig";
@@ -621,7 +625,7 @@ const symbool=s=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const SPELD_ZOOM=17;
 const stipRenderer=L.canvas({padding:0.3});
 const stippen=new Map(),spelden=new Map(); // id → {m, k}
-const ptSleutel=p=>[p.lat,p.lng,p.soort,p.ernst,p.door,p.nr].join("|");
+const ptSleutel=p=>[p.lat,p.lng,p.soort,p.ernst,p.door,p.nr,(p.tags||[]).join(",")].join("|");
 function klikPunt(id){return ev=>{L.DomEvent.stopPropagation(ev);openForm(id)}}
 function drawPoints(){
   const ids=new Set(points.map(p=>p.id)),speldModus=map.getZoom()>=SPELD_ZOOM,zicht=map.getBounds().pad(0.3);
