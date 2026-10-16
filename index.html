@@ -123,7 +123,11 @@ textarea{min-height:70px}
 .pt .n i{font-style:normal;font-size:.85rem;opacity:.95}
 .pt .meta{font-size:.82rem;color:var(--muted)}
 /* puntmarker: nummer + eerste letter van wie het opnam, kleur per persoon, stip voor de ernst */
-.mk{position:relative;display:inline-flex;align-items:center;gap:3px;height:28px;padding:0 7px;border-radius:14px 14px 14px 3px;border:2px solid #fff;color:#fff;font:700 .8rem var(--f-ui);background:var(--c,#0f5f74);box-shadow:0 1px 4px rgba(0,0,0,.45);white-space:nowrap}
+.mk{position:relative;display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 7px;border-radius:11px;border:2px solid #fff;color:#fff;font:700 .76rem var(--f-ui);background:var(--c,#0f5f74);box-shadow:0 1px 4px rgba(0,0,0,.45);white-space:nowrap}
+/* speld: label erboven, gekantelde druppelvorm met symbool; de punt valt onderaan in het midden (anker 24,58) */
+.spin{width:48px;height:60px;display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.spin .kop{margin-top:4px;width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);display:grid;place-items:center;color:#fff}
+.spin .kop svg{width:15px;height:15px;transform:rotate(45deg)}
 .mk i{font-style:normal;font-size:.74rem;opacity:.95}
 .mk s,.pt .n s{position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;border:2px solid #fff}
 .d1{background:#2e7a35}.d2{background:#e0a100}.d3{background:#b9352a}
@@ -187,6 +191,7 @@ textarea{min-height:70px}
   <div class="acct" id="acct"><p class="hint" style="margin:0">Gedeelde opslag laden…</p></div>
   <div id="lokaalMenu"></div>
   <button type="button" class="mi" id="menuBeheer" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 11l2 2 3-4"/></svg>Beheer: namen</button>
+  <button type="button" class="mi" id="menuActiviteit" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Beheer: activiteit</button>
   <button type="button" class="mi" data-menu="sheetLayers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 13 10 5 10-5"/></svg>Kaartlagen</button>
   <button type="button" class="mi" data-menu="sheetAreas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7 10 3l10 5-3 12-11-2Z"/></svg>Gebieden</button>
   <button type="button" class="mi" data-menu="sheetPoints"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>Punten</button>
@@ -235,6 +240,14 @@ textarea{min-height:70px}
       <button class="btn" type="button" id="naamNee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>Nee</button>
     </div>
   </div>
+</section>
+
+<!-- ACTIVITEIT -->
+<section class="sheet" id="sheetActiviteit" hidden>
+  <div class="grab"></div><button class="close" data-close aria-label="Sluiten">×</button>
+  <h2>Activiteit</h2>
+  <p class="hint" style="margin-top:0">De laatste 100 wijzigingen, nieuwste bovenaan. Terugdraaien zet het punt of gebied terug zoals het vóór die wijziging was; latere wijzigingen eraan gaan dan verloren.</p>
+  <div class="list" id="actLijst"></div>
 </section>
 
 <!-- BEHEER -->
@@ -332,7 +345,7 @@ textarea{min-height:70px}
     <div class="chips">
       <input type="radio" name="soort" id="s1" value="Afwatering / water" checked><label for="s1">Afwatering / water</label>
       <input type="radio" name="soort" id="s2" value="Wegdek"><label for="s2">Wegdek</label>
-      <input type="radio" name="soort" id="s3" value="Parklocatie"><label for="s3">Parklocatie</label>
+      <input type="radio" name="soort" id="s3" value="Parkeerplek"><label for="s3">Parkeerplek</label>
       <input type="radio" name="soort" id="s4" value="Overig"><label for="s4">Overig</label>
     </div>
     <div class="lbl">Ernst</div>
@@ -430,7 +443,7 @@ document.querySelectorAll('input[name="base"]').forEach(r=>r.addEventListener("c
 }));
 
 /* ---------- panelen ---------- */
-const sheets=["sheetLayers","sheetPlace","sheetForm","sheetPoints","sheetAreas","sheetArea","sheetMenu","sheetNaam","sheetBeheer"];
+const sheets=["sheetLayers","sheetPlace","sheetForm","sheetPoints","sheetAreas","sheetArea","sheetMenu","sheetNaam","sheetBeheer","sheetActiviteit"];
 function openSheet(id){sheets.forEach(s=>$(s).hidden=s!==id);$("shade").hidden=id!=="sheetMenu"}
 function closeSheets(){sheets.forEach(s=>$(s).hidden=true);$("shade").hidden=true;if(!tekenen)tekLayer.clearLayers();if(verborgenG){verborgenG=null;drawAreas()}}
 // Paneel openen, of sluiten als het al open is; lijsten eerst bijwerken
@@ -587,10 +600,20 @@ $("ovPoints").addEventListener("change",e=>e.target.checked?ptLayer.addTo(map):m
 const MENSEN={"Matthew":"#2e8b3e","Natanaël":"#2e8b3e","Natasha":"#d63384","Sjanaz":"#d63384"};
 const kleurVan=p=>MENSEN[p.door]||"#6b7a74";
 const badge=p=>`<b>${p.nr}</b>${p.door?`<i>${esc(p.door[0].toUpperCase())}</i>`:""}${p.ernst?`<s class="d${esc(p.ernst)}"></s>`:""}`;
+// Symbool per soort (lijnen in de stijl van Tabler Icons). "Parklocatie" is de oude naam van Parkeerplek.
+const soortNaam=s=>s==="Parklocatie"?"Parkeerplek":s||"Overig";
+const SYMBOOL={
+  "Parkeerplek":`<rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M10 16V8h2.6a2.5 2.5 0 0 1 0 5H10"/>`,
+  "Afwatering / water":`<path d="M12 3.5c-2.9 3.9-6 7.3-6 10.6a6 6 0 0 0 12 0c0-3.3-3.1-6.7-6-10.6Z"/>`,
+  "Wegdek":`<path d="M5 20 9 4M15 4l4 16M12 6.5v-2M12 13v-2.5M12 19.5V17"/>`,
+  "Overig":`<circle cx="6" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="18" cy="12" r="1.3" fill="currentColor"/>`};
+const symbool=s=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${SYMBOOL[soortNaam(s)]||SYMBOOL.Overig}</svg>`;
 function drawPoints(){
   ptLayer.clearLayers();
   points.forEach(p=>{
-    const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",html:`<div class="mk" style="--c:${kleurVan(p)}">${badge(p)}</div>`,iconSize:null,iconAnchor:[4,30]})}).addTo(ptLayer);
+    // Speld: label (nummer + letter) erboven, punt van de speld precies op de plek
+    const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",iconSize:[48,60],iconAnchor:[24,58],
+      html:`<div class="spin" style="--c:${kleurVan(p)}"><span class="mk">${badge(p)}</span><span class="kop">${symbool(p.soort)}</span></div>`})}).addTo(ptLayer);
     m.on("click",ev=>{L.DomEvent.stopPropagation(ev);openForm(p.id)});
   });
   $("ptCount").textContent=`Lijst (${points.length})`;
@@ -599,14 +622,14 @@ function openForm(id){
   const p=id?points.find(x=>x.id===id):null;
   if(!p&&!magSchrijven())return; // nieuw punt: eerst inloggen en een naam hebben
   editing=id;const f=$("ptForm");f.reset();$("delConfirm").hidden=true;
-  const eigen=!p||magBeheren(p);
+  const eigen=!p||magBeheren();
   f.querySelectorAll("input,textarea").forEach(el=>el.disabled=!eigen);
   $("saveBtn").hidden=!eigen;
   if(p){
-    f.querySelector(`input[name="soort"][value="${p.soort}"]`)&&(f.querySelector(`input[name="soort"][value="${p.soort}"]`).checked=true);
+    f.querySelector(`input[name="soort"][value="${soortNaam(p.soort)}"]`)&&(f.querySelector(`input[name="soort"][value="${soortNaam(p.soort)}"]`).checked=true);
     if(p.ernst)f.querySelector(`input[name="ernst"][value="${p.ernst}"]`).checked=true;
     f.querySelectorAll('input[name="tag"]').forEach(c=>c.checked=(p.tags||[]).includes(c.value));
-    $("notitie").value=p.notitie||"";$("doorTxt").textContent=(p.door||"Onbekend")+(eigen?"":" · alleen "+(p.door||"de maker")+" of de beheerder kan dit wijzigen");
+    $("notitie").value=p.notitie||"";$("doorTxt").textContent=(p.door||"Onbekend")+(p.gewijzigdDoor&&p.gewijzigdDoor!==p.door?` · laatst gewijzigd door ${p.gewijzigdDoor}`:"")+(eigen?"":" · log in om te wijzigen");
     $("formTitle").textContent=`Punt ${p.nr}`;$("formCoord").textContent=`${fmt(p.lat)}, ${fmt(p.lng)}`;$("delBtn").hidden=!eigen;$("saveBtn").textContent="Wijzigingen opslaan";
   }else{
     $("doorTxt").textContent=ik.naam;$("formTitle").textContent="Nieuw punt";
@@ -618,7 +641,7 @@ $("ptForm").addEventListener("submit",ev=>{
   ev.preventDefault();const f=ev.target;
   const data={soort:f.querySelector('input[name="soort"]:checked').value,ernst:(f.querySelector('input[name="ernst"]:checked')||{}).value||"",
     tags:[...f.querySelectorAll('input[name="tag"]:checked')].map(c=>c.value),notitie:$("notitie").value.trim()};
-  if(editing){const p=points.find(x=>x.id===editing);wijzig("punten",editing,{...data,gewijzigd:new Date().toISOString()});toast(`Punt ${p?p.nr:""} bijgewerkt`)}
+  if(editing){const p=points.find(x=>x.id===editing);if(!magSchrijven())return;wijzig("punten",editing,{...data,gewijzigd:new Date().toISOString(),gewijzigdDoor:ik.naam});toast(`Punt ${p?p.nr:""} bijgewerkt`)}
   else{
     if(!magSchrijven())return;
     const nr=points.reduce((m,p)=>Math.max(m,p.nr||0),0)+1;
@@ -630,19 +653,19 @@ $("ptForm").addEventListener("submit",ev=>{
 });
 $("delBtn").addEventListener("click",()=>$("delConfirm").hidden=!$("delConfirm").hidden);
 $("delNo").addEventListener("click",()=>$("delConfirm").hidden=true);
-$("delYes").addEventListener("click",()=>{wis("punten",editing);closeSheets();toast("Punt verwijderd")});
+$("delYes").addEventListener("click",()=>{if(!magSchrijven())return;wis("punten",editing);closeSheets();toast("Punt verwijderd")});
 const ERN={"1":"Klein","2":"Matig","3":"Ernstig"};
 function renderList(){
   const L2=$("ptList");
   if(!points.length){L2.innerHTML=`<p class="hint">Nog geen punten. Tik op de kaart of op Mijn locatie en kies 'Punt hier'.</p>`;return}
-  L2.innerHTML=points.slice().sort((a,b)=>b.nr-a.nr).map(p=>`<div class="pt" data-id="${p.id}"><div class="n" style="--c:${kleurVan(p)}">${badge(p)}</div><div style="min-width:0"><b>${esc(p.soort)}${p.ernst?" · "+ERN[p.ernst]:""}</b>
+  L2.innerHTML=points.slice().sort((a,b)=>b.nr-a.nr).map(p=>`<div class="pt" data-id="${p.id}"><div class="n" style="--c:${kleurVan(p)}">${badge(p)}</div><div style="min-width:0"><b>${esc(soortNaam(p.soort))}${p.ernst?" · "+ERN[p.ernst]:""}</b>
     <div class="meta">${esc(p.door||"")} · ${new Date(p.tijd).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})} · ${fmt(p.lat)}, ${fmt(p.lng)}</div>
     ${(p.tags||[]).length?`<div class="meta">${esc(p.tags.join(", "))}</div>`:""}${p.notitie?`<div>${esc(p.notitie)}</div>`:""}
     <div class="row" style="margin-top:6px"><button class="btn" data-go="${p.id}" type="button">Toon op kaart</button><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${fmt(p.lat)},${fmt(p.lng)}">Google Maps</a></div></div></div>`).join("");
   L2.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{const p=points.find(x=>x.id===b.dataset.go);closeSheets();map.setView([p.lat,p.lng],18)}));
 }
 function shareText(){
-  let t="Veldkaart Magenta, punten\n\n"+points.slice().sort((a,b)=>a.nr-b.nr).map(p=>`P${p.nr} ${p.soort}${p.ernst?" ("+ERN[p.ernst]+")":""}${p.door?" – "+p.door:""}\n${(p.tags||[]).join(", ")}${p.notitie?"\n"+p.notitie:""}\nhttps://www.google.com/maps?q=${fmt(p.lat)},${fmt(p.lng)}`).join("\n\n");
+  let t="Veldkaart Magenta, punten\n\n"+points.slice().sort((a,b)=>a.nr-b.nr).map(p=>`P${p.nr} ${soortNaam(p.soort)}${p.ernst?" ("+ERN[p.ernst]+")":""}${p.door?" – "+p.door:""}\n${(p.tags||[]).join(", ")}${p.notitie?"\n"+p.notitie:""}\nhttps://www.google.com/maps?q=${fmt(p.lat)},${fmt(p.lng)}`).join("\n\n");
   if(gebieden.length)t+="\n\nGebieden\n\n"+gebieden.slice().sort((a,b)=>a.nr-b.nr).map(g=>`G${g.nr} ${g.kleur} (${KLEUR[g.kleur].t.toLowerCase()})${g.door?" – "+g.door:""}\nStraten: ${(g.namen||[]).join(", ")||"–"}${g.notitie?"\n"+g.notitie:""}`).join("\n\n");
   return t;
 }
@@ -656,7 +679,7 @@ $("csvBtn").addEventListener("click",()=>{
   if(!points.length){toast("Nog geen punten");return}
   const cell=v=>{const s=Array.isArray(v)?v.join(", "):v==null?"":String(v);return /[;"\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
   const cols=[["nr","Nr"],["soort","Soort"],["ernst","Ernst"],["tags","Kenmerken"],["notitie","Notitie"],["lat","Breedtegraad"],["lng","Lengtegraad"],["nauwkeurigheid","Nauwkeurigheid (m)"],["door","Opgenomen door"],["tijd","Tijdstip"]];
-  const csv="﻿"+[cols.map(c=>c[1]).join(";"),...points.slice().sort((a,b)=>a.nr-b.nr).map(p=>cols.map(([k])=>cell(k==="ernst"?ERN[p.ernst]||"":k==="lat"||k==="lng"?fmt(p[k]):p[k])).join(";"))].join("\r\n");
+  const csv="﻿"+[cols.map(c=>c[1]).join(";"),...points.slice().sort((a,b)=>a.nr-b.nr).map(p=>cols.map(([k])=>cell(k==="ernst"?ERN[p.ernst]||"":k==="soort"?soortNaam(p.soort):k==="lat"||k==="lng"?fmt(p[k]):p[k])).join(";"))].join("\r\n");
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="veldkaart-magenta.csv";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
 });
 
@@ -715,7 +738,7 @@ function straatKlik(e,g,k){
 function haalWeg(g,k){
   if(!magSchrijven())return;
   const uit=[...new Set([...(g.uit||[]),k])],rest=stratenIn(g.punten).filter(f=>!uit.includes(sleutel(f)));
-  if(g.vlak===false&&!rest.length&&magBeheren(g)){wis("gebieden",g.id);toast(`Gebied G${g.nr} verwijderd`);return}
+  if(g.vlak===false&&!rest.length&&magBeheren()){wis("gebieden",g.id);toast(`Gebied G${g.nr} verwijderd`);return}
   wijzig("gebieden",g.id,{uit,namen:namen(rest),gewijzigd:new Date().toISOString(),gewijzigdDoor:ik.naam});
   toast(`${mooi(k)} weggehaald uit G${g.nr}`);
 }
@@ -799,7 +822,7 @@ function openArea(id,ring){
   $("areaNote").value=g?g.notitie||"":"";
   $("areaDoorTxt").textContent=g?(g.door||"Onbekend")+(g.gewijzigdDoor&&g.gewijzigdDoor!==g.door?` · laatst bijgewerkt door ${g.gewijzigdDoor}`:""):(ik&&ik.naam)||"";
   // Iedereen uit de groep mag de status en de straten bijwerken; verwijderen alleen de maker of de beheerder
-  $("areaTitle").textContent=g?`Gebied G${g.nr}`:"Nieuw gebied";$("areaDel").hidden=!(g&&magBeheren(g));$("areaSave").textContent=g?"Wijzigingen opslaan":"Opslaan";
+  $("areaTitle").textContent=g?`Gebied G${g.nr}`:"Nieuw gebied";$("areaDel").hidden=!(g&&magBeheren());$("areaSave").textContent=g?"Wijzigingen opslaan":"Opslaan";
   const uit=new Set(g?g.uit||[]:[]),keys=[...new Set(stratenIn(nieuwRing).map(sleutel))].sort((a,b)=>(a||"~").localeCompare(b||"~"));
   $("areaChecks").innerHTML=`<label><input type="checkbox" id="chkVlak" ${!g||g.vlak!==false?"checked":""}><span>Gebied tonen<small>Het vlak met de rand</small></span></label>`+
     (!straten?`<p class="hint" style="margin:0">Straten konden niet geladen worden. Het gebied wordt wel bewaard.</p>`
@@ -845,7 +868,9 @@ const NAMEN=Object.keys(MENSEN);
 const FBV="10.14.1",FBU=m=>`https://www.gstatic.com/firebasejs/${FBV}/firebase-${m}.js`;
 let fb=null,ik=null,bezet={},leden={},naamGevraagd=false,beheerderJa=false;
 const isBeheerder=()=>!!(ik&&beheerderJa);
-const magBeheren=x=>!!(ik&&ik.naam&&(x.uid===ik.uid||isBeheerder()));
+// Iedereen uit de groep (ingelogd met een naam) mag elkaars punten en gebieden wijzigen en verwijderen;
+// alles komt in het activiteitenlog, waar de beheerder het kan terugdraaien.
+const magBeheren=()=>!!(ik&&ik.naam);
 function magSchrijven(){
   if(!fb){toast("De gedeelde opslag laadt nog. Probeer het zo opnieuw.");return false}
   if(!ik){toast("Log eerst in via het menu (☰) om iets toe te voegen.");openSheet("sheetMenu");return false}
@@ -853,10 +878,16 @@ function magSchrijven(){
   return true;
 }
 const fout=e=>{console.error(e);toast(e&&e.code==="permission-denied"?"Dat mag niet: je kunt alleen je eigen punten en gebieden wijzigen.":"Opslaan lukte niet ("+((e&&e.code)||e)+").")};
-// Schrijven zonder te wachten: Firestore toont het meteen en stuurt het door zodra er internet is
-function schrijf(pad,data){const {F,db}=fb,ref=F.doc(F.collection(db,pad));F.setDoc(ref,data).catch(fout);return ref.id}
-function wijzig(pad,id,data){fb.F.updateDoc(fb.F.doc(fb.db,pad,id),data).catch(fout)}
-function wis(pad,id){fb.F.deleteDoc(fb.F.doc(fb.db,pad,id)).catch(fout)}
+// Schrijven zonder te wachten: Firestore toont het meteen en stuurt het door zodra er internet is.
+// Elke wijziging gaat in dezelfde batch als een regel in "activiteit", met de toestand ervoor en erna.
+function huidig(pad,id){const x=(pad==="punten"?points:gebieden).find(y=>y.id===id);if(!x)return null;const c={...x};delete c.id;delete c.punten;return c}
+function logRegel(b,actie,pad,id,voor,na){
+  const {F,db}=fb;
+  b.set(F.doc(F.collection(db,"activiteit")),{tijd:new Date().toISOString(),door:ik.naam,uid:ik.uid,actie,pad,docId:id,nr:(na||voor||{}).nr??null,voor:voor??null,na:na??null});
+}
+function schrijf(pad,data){const {F,db}=fb,b=F.writeBatch(db),ref=F.doc(F.collection(db,pad));b.set(ref,data);logRegel(b,"nieuw",pad,ref.id,null,data);b.commit().catch(fout);return ref.id}
+function wijzig(pad,id,data){const {F,db}=fb,b=F.writeBatch(db),voor=huidig(pad,id);b.update(F.doc(db,pad,id),data);logRegel(b,"gewijzigd",pad,id,voor,voor?{...voor,...data}:data);b.commit().catch(fout)}
+function wis(pad,id){const {F,db}=fb,b=F.writeBatch(db);b.delete(F.doc(db,pad,id));logRegel(b,"verwijderd",pad,id,huidig(pad,id),null);b.commit().catch(fout)}
 const naarRing=a=>{const r=[];for(let i=0;i+1<(a||[]).length;i+=2)r.push([a[i],a[i+1]]);return r};
 
 function toonAccount(){
@@ -868,7 +899,7 @@ function toonAccount(){
     $("btnKies").addEventListener("click",openNaam);$("btnUit").addEventListener("click",uitloggen)}
   else{el.innerHTML=`<b>Ingelogd als ${esc(ik.naam)}${isBeheerder()?" · beheerder":""}</b><span class="hint">${esc(ik.email||"")}</span><div class="row"><button class="btn" type="button" id="btnUit">Uitloggen</button></div>`;
     $("btnUit").addEventListener("click",uitloggen)}
-  $("menuBeheer").hidden=!isBeheerder();
+  $("menuBeheer").hidden=$("menuActiviteit").hidden=!isBeheerder();
   toonLokaal();
 }
 async function login(){
@@ -924,6 +955,45 @@ function toonBeheer(){
 }
 $("menuBeheer").addEventListener("click",()=>{toonBeheer();openSheet("sheetBeheer")});
 
+// Beheer: activiteit bekijken en terugdraaien
+let activiteit=[],actUit=null;
+const ACTIE={nieuw:"maakte",gewijzigd:"wijzigde",verwijderd:"verwijderde"};
+const VELD={soort:"soort",ernst:"ernst",tags:"vinkjes",notitie:"notitie",kleur:"status",vlak:"vlak tonen",uit:"uitgevinkte straten"};
+function toonWaarde(k,v){if(v==null||v==="")return "–";if(k==="ernst")return ERN[v]||v;if(k==="soort")return soortNaam(v);if(k==="vlak")return v?"aan":"uit";if(Array.isArray(v))return v.length?v.map(x=>k==="uit"?mooi(x):x).join(", "):"–";return String(v)}
+function verschil(a,b){a=a||{};b=b||{};return Object.keys(VELD).filter(k=>JSON.stringify(a[k]??null)!==JSON.stringify(b[k]??null)).map(k=>`${VELD[k]}: ${esc(toonWaarde(k,a[k]))} → ${esc(toonWaarde(k,b[k]))}`)}
+function toonActiviteit(){
+  const el=$("actLijst");
+  if(!activiteit.length){el.innerHTML=`<p class="hint">Nog geen activiteit.</p>`;return}
+  el.innerHTML=activiteit.map(a=>{const wat=(a.pad==="punten"?"punt ":"gebied G")+(a.nr??"");
+    const det=a.actie==="gewijzigd"?verschil(a.voor,a.na):[];
+    return `<div class="pt"><div class="n" style="--c:${MENSEN[a.door]||"#6b7a74"}"><b>${esc((a.door||"?")[0])}</b></div><div style="min-width:0">
+      <b>${esc(a.door||"?")} ${ACTIE[a.actie]||a.actie} ${esc(wat)}</b>
+      <div class="meta">${new Date(a.tijd).toLocaleString("nl-NL",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+      ${det.length?`<div class="meta">${det.join("<br>")}</div>`:""}
+      ${a.teruggedraaid?`<div class="meta">Teruggedraaid door ${esc(a.terugDoor||"")}</div>`:`<div class="row delrow" style="margin-top:6px"><button class="btn" type="button" data-terug="${a.id}">Terugdraaien</button>
+      <div class="pop" hidden><b>Zeker?</b><div class="row"><button class="btn danger" type="button" data-ja="${a.id}">Ja</button><button class="btn" type="button" data-nee>Nee</button></div></div></div>`}
+    </div></div>`}).join("");
+  el.querySelectorAll("[data-terug]").forEach(b=>b.addEventListener("click",()=>{const p=b.parentElement.querySelector(".pop");p.hidden=!p.hidden}));
+  el.querySelectorAll("[data-nee]").forEach(b=>b.addEventListener("click",()=>b.closest(".pop").hidden=true));
+  el.querySelectorAll("[data-ja]").forEach(b=>b.addEventListener("click",()=>terugdraaien(activiteit.find(x=>x.id===b.dataset.ja))));
+}
+async function terugdraaien(a){
+  if(!a||!isBeheerder())return;
+  const {F,db}=fb,b=F.writeBatch(db),ref=F.doc(db,a.pad,a.docId);
+  if(a.actie==="nieuw")b.delete(ref);          // nieuw → weer weg
+  else if(a.voor)b.set(ref,a.voor);             // gewijzigd of verwijderd → toestand van ervoor terug
+  else{toast("Van deze wijziging is geen eerdere toestand bewaard.");return}
+  b.update(F.doc(db,"activiteit",a.id),{teruggedraaid:true,terugDoor:ik.naam,terugTijd:new Date().toISOString()});
+  try{await b.commit();toast("Teruggedraaid")}catch(e){fout(e)}
+}
+$("menuActiviteit").addEventListener("click",()=>{toonActiviteit();openSheet("sheetActiviteit")});
+function startActiviteit(){
+  if(actUit)return;const {F,db}=fb;
+  actUit=F.onSnapshot(F.query(F.collection(db,"activiteit"),F.orderBy("tijd","desc"),F.limit(100)),
+    s=>{activiteit=s.docs.map(d=>({...d.data(),id:d.id}));if(!$("sheetActiviteit").hidden)toonActiviteit()},e=>console.error(e));
+}
+function stopActiviteit(){if(actUit){actUit();actUit=null}activiteit=[]}
+
 // Punten en gebieden die nog alleen op dit toestel staan (van vóór de gedeelde opslag)
 function toonLokaal(){
   const lp=ls.get(LS,[]),lg=ls.get(LSG,[]),n=lp.length+lg.length;
@@ -934,11 +1004,12 @@ function toonLokaal(){
 async function upload(){
   if(!magSchrijven())return;
   const {F,db}=fb,lp=ls.get(LS,[]),lg=ls.get(LSG,[]),b=F.writeBatch(db),nu=new Date().toISOString();
+  const zetMetLog=(pad,data)=>{const ref=F.doc(F.collection(db,pad));b.set(ref,data);logRegel(b,"nieuw",pad,ref.id,null,data)};
   let nr=points.reduce((m,p)=>Math.max(m,p.nr||0),0),gnr=gebieden.reduce((m,g)=>Math.max(m,g.nr||0),0);
   const notitie=(t,door)=>[t||"",door&&door!==ik.naam?`(opgenomen door ${door})`:""].filter(Boolean).join(" ");
-  lp.forEach(p=>b.set(F.doc(F.collection(db,"punten")),{nr:++nr,lat:p.lat,lng:p.lng,nauwkeurigheid:p.nauwkeurigheid??null,tijd:p.tijd||nu,soort:p.soort||"Overig",
+  lp.forEach(p=>zetMetLog("punten",{nr:++nr,lat:p.lat,lng:p.lng,nauwkeurigheid:p.nauwkeurigheid??null,tijd:p.tijd||nu,soort:soortNaam(p.soort),
     ernst:p.ernst||"",tags:p.tags||[],notitie:notitie(p.notitie,p.door),door:ik.naam,uid:ik.uid}));
-  lg.filter(g=>Array.isArray(g.punten)&&g.punten.length>=3&&KLEUR[g.kleur]).forEach(g=>b.set(F.doc(F.collection(db,"gebieden")),{nr:++gnr,ring:g.punten.flat(),tijd:g.tijd||nu,
+  lg.filter(g=>Array.isArray(g.punten)&&g.punten.length>=3&&KLEUR[g.kleur]).forEach(g=>zetMetLog("gebieden",{nr:++gnr,ring:g.punten.flat(),tijd:g.tijd||nu,
     kleur:g.kleur,notitie:notitie(g.notitie,g.door),vlak:g.vlak!==false,uit:g.uit||[],namen:g.namen||[],door:ik.naam,uid:ik.uid}));
   try{
     await b.commit();
@@ -961,7 +1032,7 @@ async function startFirebase(){
   F.onSnapshot(F.collection(db,"namen"),s=>{bezet={};s.docs.forEach(d=>bezet[d.id]=d.data().uid);if(!$("sheetNaam").hidden)openNaam();if(!$("sheetBeheer").hidden)toonBeheer()},leesFout);
   let ledenUit=null,alleLedenUit=null;
   A.onAuthStateChanged(auth,u=>{
-    if(ledenUit){ledenUit();ledenUit=null}if(alleLedenUit){alleLedenUit();alleLedenUit=null}
+    if(ledenUit){ledenUit();ledenUit=null}if(alleLedenUit){alleLedenUit();alleLedenUit=null}stopActiviteit();
     naamGevraagd=false;beheerderJa=false;
     if(!u){ik=null;toonAccount();return}
     ik={uid:u.uid,email:u.email||"",naam:null};toonAccount();
@@ -970,8 +1041,8 @@ async function startFirebase(){
       if(!ik.naam&&!naamGevraagd)openNaam();
     },e=>console.error(e));
     alleLedenUit=F.onSnapshot(F.collection(db,"leden"),s=>{
-      beheerderJa=true;leden={};s.docs.forEach(d=>leden[d.id]=d.data());toonAccount();drawPoints();if(!$("sheetBeheer").hidden)toonBeheer();
-    },()=>{beheerderJa=false;toonAccount()}); // geweigerd = geen beheerder, dat is normaal
+      beheerderJa=true;startActiviteit();leden={};s.docs.forEach(d=>leden[d.id]=d.data());toonAccount();drawPoints();if(!$("sheetBeheer").hidden)toonBeheer();
+    },()=>{beheerderJa=false;stopActiviteit();toonAccount()}); // geweigerd = geen beheerder, dat is normaal
   });
   A.getRedirectResult(auth).catch(e=>{if(e&&e.code)toast("Inloggen lukte niet ("+e.code+").")});
   toonAccount();
