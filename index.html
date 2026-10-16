@@ -17,25 +17,50 @@
   --f-ui:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --f-head:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root{
+/* Donker: volgt de telefoon (Automatisch), tenzij in Lagen voor Licht of Donker is gekozen */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f1514; --surface:#18211f; --sunk:#202b28; --ink:#e6eeeb; --muted:#9fb2ab; --line:#2e3b37;
   --accent:#55b6cc; --accent-ink:#071417; --ok:#6cc073; --warn:#e3a43a; --bad:#ec7064; --park:#7cc25f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1514; --surface:#18211f; --sunk:#202b28; --ink:#e6eeeb; --muted:#9fb2ab; --line:#2e3b37;
+  --accent:#55b6cc; --accent-ink:#071417; --ok:#6cc073; --warn:#e3a43a; --bad:#ec7064; --park:#7cc25f; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.4 var(--f-ui);font-variant-numeric:tabular-nums;overflow:hidden;-webkit-tap-highlight-color:transparent}
 #map{position:fixed;inset:0;background:var(--sunk)}
 .topbar{position:fixed;z-index:1000;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top,0px) + 8px) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));display:flex;gap:8px;align-items:center;pointer-events:none}
 .topbar>*{pointer-events:auto}
-.title{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.title b{font:700 1.15rem var(--f-head);display:block;line-height:1.1}
-.title span{font-size:.75rem;color:var(--muted)}
+.ic{width:44px;height:44px;flex:none;display:grid;place-items:center;padding:0;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
+.ic svg{width:22px;height:22px}
+.ic.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+#btnHome svg{color:var(--road)}
+.rail{position:fixed;z-index:1000;right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 66px);display:flex;flex-direction:column;gap:8px}
 .search{flex:1;min-width:0;display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.15);overflow:hidden}
 .search input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;padding:10px 12px;outline:none}
 .search button{border:0;background:transparent;color:var(--accent);font:600 .9rem var(--f-ui);padding:0 12px;cursor:pointer}
-.dock{position:fixed;z-index:1000;left:0;right:0;bottom:0;padding:8px max(12px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 10px) max(12px,env(safe-area-inset-left,0px));display:flex;gap:8px;justify-content:center;pointer-events:none}
-.dock button{pointer-events:auto;flex:1;min-width:0;max-width:160px;min-height:52px;padding:4px 2px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 .86rem var(--f-ui);white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-.dock button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.dock svg{width:22px;height:22px}
+/* GPS-balk onder: status van de locatie + de drie hoofdknoppen */
+.gpsbar{position:fixed;z-index:1000;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -4px 16px rgba(0,0,0,.18);padding:6px max(12px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 10px) max(12px,env(safe-area-inset-left,0px))}
+.gpsrow{width:100%;min-height:36px;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--ink);font:600 .9rem var(--f-ui);padding:2px 2px 6px;cursor:pointer;text-align:left}
+.gpsrow #gpsTxt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gdot{width:11px;height:11px;border-radius:50%;background:var(--muted);flex:none}
+.gcoord{margin-left:auto;flex:none;color:var(--muted);font-weight:500;font-size:.8rem}
+.gbtns{display:flex;gap:8px}
+.gbtns .btn{flex:1;min-width:0;white-space:nowrap;padding:9px 6px;gap:6px}
+.gbtns .btn.primary{flex:1.35}
+.gbtns svg{width:18px;height:18px}
+/* menu links */
+.shade{position:fixed;inset:0;z-index:1140;background:rgba(0,0,0,.4)}
+.drawer{position:fixed;z-index:1150;top:0;bottom:0;left:0;width:min(320px,86vw);overflow:auto;background:var(--surface);box-shadow:6px 0 24px rgba(0,0,0,.3);padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px))}
+.dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.dhead b{font:700 1.35rem var(--f-head);display:block;line-height:1.1}
+.dhead span{font-size:.8rem;color:var(--muted)}
+.drawer .close{flex:none;border:0;background:var(--sunk);color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer}
+.mi{display:flex;width:100%;align-items:center;gap:12px;min-height:50px;padding:0 4px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);font:600 1rem var(--f-ui);text-align:left;cursor:pointer}
+.mi svg{width:21px;height:21px;color:var(--accent);flex:none}
+.tips{margin-top:14px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--sunk)}
+.tips summary{font-weight:600;cursor:pointer}
+.tips ul{margin:8px 0 0;padding-left:18px;font-size:.88rem}
+.tips li{margin-bottom:5px}
 .sheet{position:fixed;z-index:1100;left:0;right:0;bottom:0;max-height:72vh;overflow:auto;background:var(--surface);border-top-left-radius:18px;border-top-right-radius:18px;box-shadow:0 -6px 24px rgba(0,0,0,.25);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px))}
 .grab{width:42px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
 .sheet h2{font:700 1.3rem var(--f-head);margin:0 0 8px}
@@ -74,8 +99,6 @@ textarea{min-height:70px}
 .drawbar .row{margin-top:8px}
 .drawbar .btn{flex:1}
 .btn:disabled{opacity:.45;cursor:default}
-.home{position:fixed;z-index:1000;right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 66px);display:flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 .9rem var(--f-ui);box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
-.home svg{width:18px;height:18px;color:#e0412f}
 [hidden]{display:none!important}
 .toast{position:fixed;z-index:1200;left:50%;top:calc(env(safe-area-inset-top,0px) + 72px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-weight:600;max-width:90vw;text-align:center}
 .leaflet-popup-content{font:14px/1.4 var(--f-ui);margin:10px 12px}
@@ -83,7 +106,7 @@ textarea{min-height:70px}
 .leaflet-popup-content td{padding:2px 6px 2px 0;vertical-align:top}
 .leaflet-popup-content td:first-child{color:#56665f;white-space:nowrap}
 .leaflet-control-attribution{font-size:10px}
-.leaflet-bottom{bottom:calc(env(safe-area-inset-bottom,0px) + 72px)}
+.leaflet-bottom{bottom:calc(env(safe-area-inset-bottom,0px) + 108px)}
 .leaflet-top{top:calc(env(safe-area-inset-top,0px) + 64px)}
 .leaflet-control-zoom{display:none}
 @media (min-width:700px){.sheet{left:auto;right:16px;bottom:16px;width:400px;border-radius:18px}.leaflet-control-zoom{display:block}}
@@ -92,22 +115,60 @@ textarea{min-height:70px}
 <body>
 <div id="map" role="application" aria-label="Kaart van het onderzoeksgebied"></div>
 
-<div class="topbar">
-  <div class="title"><b>Veldkaart Magenta</b><span>PW1 Citylab · PTC</span></div>
+<div class="topbar" id="topbar">
+  <button type="button" class="ic" id="btnMenu" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   <form class="search" id="searchForm" role="search">
     <input type="text" id="searchInput" placeholder="Zoek straat…" aria-label="Zoek een straat">
     <button type="submit">Zoek</button>
   </form>
 </div>
 
-<button type="button" class="home" id="btnHome" aria-label="Terug naar het onderzoeksgebied"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 6 12 3l8 4-2 13-12-1Z"/></svg>Naar gebied</button>
-
-<div class="dock" id="dock">
-  <button type="button" id="btnLayers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 13 10 5 10-5"/></svg>Lagen</button>
-  <button type="button" id="btnLocate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Mijn locatie</button>
-  <button type="button" id="btnAreas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7 10 3l10 5-3 12-11-2Z"/><circle cx="4" cy="7" r="1.6" fill="currentColor"/><circle cx="20" cy="8" r="1.6" fill="currentColor"/><circle cx="6" cy="18" r="1.6" fill="currentColor"/></svg><span id="areaCount">Gebieden</span></button>
-  <button type="button" id="btnPoints"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg><span id="ptCount">Punten (0)</span></button>
+<!-- iconen rechts: lagen, mijn locatie, naar gebied -->
+<div class="rail" id="rail">
+  <button type="button" class="ic" id="btnLayers" aria-label="Kaartlagen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 13 10 5 10-5"/></svg></button>
+  <button type="button" class="ic" id="btnLocate" aria-label="Mijn locatie"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+  <button type="button" class="ic" id="btnHome" aria-label="Terug naar het onderzoeksgebied"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg></button>
 </div>
+
+<!-- GPS-balk onder -->
+<div class="gpsbar" id="gpsbar">
+  <button type="button" class="gpsrow" id="gpsRow"><span class="gdot" id="gpsDot"></span><span id="gpsTxt">Locatie uit · tik om te zoeken</span><span class="gcoord" id="gpsCoord"></span></button>
+  <div class="gbtns">
+    <button type="button" class="btn primary" id="btnAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Punt hier</button>
+    <button type="button" class="btn" id="btnAreas"><span id="areaCount">Gebieden</span></button>
+    <button type="button" class="btn" id="btnPoints"><span id="ptCount">Lijst (0)</span></button>
+  </div>
+</div>
+
+<!-- MENU -->
+<div class="shade" id="shade" hidden></div>
+<nav class="drawer" id="sheetMenu" aria-label="Menu" hidden>
+  <div class="dhead"><div><b>Veldkaart Magenta</b><span>PW1 Citylab · PTC</span></div><button class="close" data-close aria-label="Sluiten">×</button></div>
+  <button type="button" class="mi" data-menu="sheetLayers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 13 10 5 10-5"/></svg>Kaartlagen</button>
+  <button type="button" class="mi" data-menu="sheetAreas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7 10 3l10 5-3 12-11-2Z"/></svg>Gebieden</button>
+  <button type="button" class="mi" data-menu="sheetPoints"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>Punten</button>
+  <button type="button" class="mi" id="menuShare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"/></svg>Delen in de groepsapp</button>
+  <button type="button" class="mi" id="menuCsv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download CSV</button>
+  <div class="lbl">Weergave</div>
+  <div class="chips">
+    <input type="radio" name="thema" id="t0" value="auto" checked><label for="t0">Automatisch</label>
+    <input type="radio" name="thema" id="t1" value="light"><label for="t1">Licht</label>
+    <input type="radio" name="thema" id="t2" value="dark"><label for="t2">Donker</label>
+  </div>
+  <p class="hint">Automatisch volgt de instelling van je telefoon.</p>
+  <details class="tips">
+    <summary>Werkwijze in het veld</summary>
+    <ul>
+      <li>Eerst rijden voor het overzicht, daarna lopen bij goten en duikers.</li>
+      <li>Punt bij: stilstaand water, verstopte of kapotte goot, elke duiker, wisseling van wegtype of van wel naar geen goot, en om de 100 à 200 m.</li>
+      <li>Let op: kant van de goot, grond of beton, begroeid, afval, slib, stroming (blaadjestest), doorkijk door de duiker, kuilen, verzakkingen.</li>
+      <li>Foto's: overzicht en detail, met iets erbij voor de maat; goot in de lengte.</li>
+      <li>GPS: buiten staan en 10 à 30 s wachten tot de stip blauw is, of zelf de plek aantikken.</li>
+      <li>Veiligheid: niet door water van onbekende diepte, uit de rijbaan, let op honden, vraag toestemming voor een erf.</li>
+    </ul>
+  </details>
+  <p class="hint">Punten en gebieden worden op deze telefoon bewaard. Deel ze na de ronde in de groepsapp.</p>
+</nav>
 
 <!-- LAGEN -->
 <section class="sheet" id="sheetLayers" hidden>
@@ -247,8 +308,18 @@ textarea{min-height:70px}
 "use strict";
 const $=s=>document.getElementById(s);
 const esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const LS="veldkaart-magenta-punten", LSB="veldkaart-magenta-base", LSD="veldkaart-magenta-door", LSG="veldkaart-magenta-gebieden";
+const LS="veldkaart-magenta-punten", LSB="veldkaart-magenta-base", LSD="veldkaart-magenta-door", LSG="veldkaart-magenta-gebieden", LST="veldkaart-magenta-thema";
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- weergave: automatisch, licht of donker ---------- */
+function zetThema(t){
+  if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;
+  const donker=t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches);
+  document.querySelector('meta[name="theme-color"]').content=donker?"#0f1514":"#0f5f74";
+}
+let thema=ls.get(LST,"auto");zetThema(thema);
+document.querySelectorAll('input[name="thema"]').forEach(r=>{r.checked=r.value===thema;r.addEventListener("change",()=>{thema=r.value;ls.set(LST,thema);zetThema(thema)})});
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>zetThema(thema));
 function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)}
 const MIGLIS="https://services2.arcgis.com/CK9GXvmosMB7QXv8/arcgis/rest/services/";
 const STREETS_LAYER=MIGLIS+"Strpln/FeatureServer/0";
@@ -276,12 +347,19 @@ document.querySelectorAll('input[name="base"]').forEach(r=>r.addEventListener("c
 }));
 
 /* ---------- panelen ---------- */
-const sheets=["sheetLayers","sheetPlace","sheetForm","sheetPoints","sheetAreas","sheetArea"];
-function openSheet(id){sheets.forEach(s=>$(s).hidden=s!==id)}
-function closeSheets(){sheets.forEach(s=>$(s).hidden=true);if(!tekenen)tekLayer.clearLayers()}
+const sheets=["sheetLayers","sheetPlace","sheetForm","sheetPoints","sheetAreas","sheetArea","sheetMenu"];
+function openSheet(id){sheets.forEach(s=>$(s).hidden=s!==id);$("shade").hidden=id!=="sheetMenu"}
+function closeSheets(){sheets.forEach(s=>$(s).hidden=true);$("shade").hidden=true;if(!tekenen)tekLayer.clearLayers()}
+// Paneel openen, of sluiten als het al open is; lijsten eerst bijwerken
+function togglePanel(id){if(!$(id).hidden){closeSheets();return}if(id==="sheetPoints")renderList();if(id==="sheetAreas")renderAreas();openSheet(id)}
 document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",closeSheets));
-$("btnLayers").addEventListener("click",()=>$("sheetLayers").hidden?openSheet("sheetLayers"):closeSheets());
-$("btnPoints").addEventListener("click",()=>{if($("sheetPoints").hidden){renderList();openSheet("sheetPoints")}else closeSheets()});
+$("shade").addEventListener("click",closeSheets);
+$("btnMenu").addEventListener("click",()=>togglePanel("sheetMenu"));
+document.querySelectorAll("[data-menu]").forEach(b=>b.addEventListener("click",()=>togglePanel(b.dataset.menu)));
+$("btnLayers").addEventListener("click",()=>togglePanel("sheetLayers"));
+$("btnPoints").addEventListener("click",()=>togglePanel("sheetPoints"));
+$("menuShare").addEventListener("click",()=>{closeSheets();$("shareBtn").click()});
+$("menuCsv").addEventListener("click",()=>{closeSheets();$("csvBtn").click()});
 
 /* ---------- onderzoeksgebied: de vier randwegen, afgeknipt op de hoekpunten ---------- */
 // Uit MI-GLIS Strpln (okt 2026), [lng,lat]. Elke weg loopt van hoek tot hoek, samen vormen ze de grens.
@@ -292,8 +370,10 @@ const RING=[...GRENS.west,...GRENS.noord.slice(1),...GRENS.oost.slice(1),...GREN
 const areaGroup=L.layerGroup().addTo(map);
 const areaPoly=L.polygon(RING.map(ll),{stroke:false,fillColor:"#e0412f",fillOpacity:.07,interactive:false}).addTo(areaGroup);
 RAND.forEach(([k,naam])=>L.polyline(GRENS[k].map(ll),{color:"#e0412f",weight:5,opacity:.9}).bindPopup(`<b>${esc(naam)}</b><br>Grens onderzoeksgebied`).addTo(areaGroup));
-map.fitBounds(areaPoly.getBounds(),{padding:[30,30]});
-$("btnHome").addEventListener("click",()=>{map.closePopup();map.fitBounds(areaPoly.getBounds(),{padding:[30,30]})});
+// Ruimte laten voor de zoekbalk, de iconen rechts en de GPS-balk onder
+const naarGebied=animate=>map.fitBounds(areaPoly.getBounds(),{paddingTopLeft:[16,70],paddingBottomRight:[64,120],animate});
+naarGebied(false);
+$("btnHome").addEventListener("click",()=>{map.closePopup();naarGebied(true)});
 $("ovArea").addEventListener("change",e=>e.target.checked?areaGroup.addTo(map):map.removeLayer(areaGroup));
 async function queryStreets(where){
   const u=STREETS_LAYER+"/query?"+new URLSearchParams({where,outFields:"STREETNAME,RESSORTNAM",returnGeometry:"true",outSR:"4326",f:"geojson"});
@@ -338,12 +418,15 @@ $("ovParcels").addEventListener("change",e=>{
 
 /* ---------- GPS ---------- */
 let me=null,meAcc=null,follow=false,lastPos=null;
-$("btnLocate").addEventListener("click",()=>{
-  if(!("geolocation" in navigator)){toast("Locatie wordt niet ondersteund");return}
-  if(follow&&lastPos){showPlace(lastPos.lat,lastPos.lng,lastPos.acc,true);return}
-  follow=true;$("btnLocate").classList.add("on");toast("Locatie zoeken…");
-  map.locate({watch:true,enableHighAccuracy:true,setView:false,maximumAge:5000});
-});
+function gpsBar(txt,col,coord){$("gpsTxt").textContent=txt;$("gpsDot").style.background=col||"var(--muted)";$("gpsCoord").textContent=coord||""}
+function startGps(){
+  if(!("geolocation" in navigator)){toast("Locatie wordt niet ondersteund");return false}
+  if(!follow){follow=true;$("btnLocate").classList.add("on");gpsBar("Locatie zoeken…","var(--warn)");map.locate({watch:true,enableHighAccuracy:true,setView:false,maximumAge:5000})}
+  return true;
+}
+// Rechts: naar mijn locatie springen. GPS-balk: aanzetten, of de plek tonen met kopieer en Google Maps.
+$("btnLocate").addEventListener("click",()=>{if(follow&&lastPos)map.setView([lastPos.lat,lastPos.lng],Math.max(map.getZoom(),17));else if(startGps())toast("Locatie zoeken…")});
+$("gpsRow").addEventListener("click",()=>{if(follow&&lastPos)showPlace(lastPos.lat,lastPos.lng,lastPos.acc,true);else if(startGps())toast("Locatie zoeken…")});
 let firstFix=true;
 let placeIsMe=false,warnedAcc=false;
 map.on("locationfound",e=>{
@@ -353,13 +436,18 @@ map.on("locationfound",e=>{
   if(!me){me=L.circleMarker(e.latlng,{radius:8,color:"#fff",weight:3,fillColor:col,fillOpacity:1}).addTo(map);meAcc=L.circle(e.latlng,{radius:e.accuracy,color:col,weight:1.5,fillOpacity:.12,interactive:false}).addTo(map);
     me.on("click",()=>showPlace(lastPos.lat,lastPos.lng,lastPos.acc,true))}
   else{me.setLatLng(e.latlng).setStyle({fillColor:col});meAcc.setLatLng(e.latlng).setRadius(e.accuracy).setStyle({color:col})}
-  $("btnLocate").lastChild.textContent=` ± ${acc} m`;
-  if(firstFix){map.setView(e.latlng,Math.max(map.getZoom(),17));firstFix=false;showPlace(lastPos.lat,lastPos.lng,acc,true)}
+  gpsBar(acc<=25?`± ${acc} m · goed`:acc<=75?`± ${acc} m · even wachten`:`± ${acc} m · te grof`,acc<=25?"var(--ok)":acc<=75?"var(--warn)":"var(--bad)",`${lastPos.lat.toFixed(5)}, ${lastPos.lng.toFixed(5)}`);
+  if(firstFix){map.setView(e.latlng,Math.max(map.getZoom(),17));firstFix=false}
   else if(placeIsMe&&!$("sheetPlace").hidden){showPlace(lastPos.lat,lastPos.lng,acc,true)}
   if(acc>75&&!warnedAcc){warnedAcc=true;toast(`Locatie onnauwkeurig (± ${acc} m). Ga naar buiten en wacht even, of tik zelf de plek aan op de luchtfoto.`)}
   if(acc<=25&&warnedAcc){warnedAcc=false;toast(`Locatie nauwkeurig (± ${acc} m)`)}
 });
-map.on("locationerror",e=>{follow=false;$("btnLocate").classList.remove("on");toast(e.code===1?"Geef de browser toestemming voor je locatie":"Locatie niet gevonden")});
+map.on("locationerror",e=>{follow=false;$("btnLocate").classList.remove("on");gpsBar(e.code===1?"Geen toestemming voor locatie":"Locatie niet gevonden · tik om opnieuw","var(--bad)");toast(e.code===1?"Geef de browser toestemming voor je locatie":"Locatie niet gevonden")});
+// Punt hier: op mijn GPS-locatie; zonder GPS eerst zoeken, of zelf op de kaart tikken
+$("btnAdd").addEventListener("click",()=>{
+  if(follow&&lastPos){place={lat:lastPos.lat,lng:lastPos.lng,acc:lastPos.acc};if(tempMarker){map.removeLayer(tempMarker);tempMarker=null}openForm(null);return}
+  if(startGps())toast("Locatie zoeken… Of tik zelf op de kaart waar het punt moet komen.");
+});
 
 /* ---------- plek ---------- */
 let place=null,tempMarker=null;
@@ -403,7 +491,7 @@ function drawPoints(){
     const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",html:`<div class="mk" style="--c:${kleurVan(p)}">${badge(p)}</div>`,iconSize:null,iconAnchor:[4,30]})}).addTo(ptLayer);
     m.on("click",ev=>{L.DomEvent.stopPropagation(ev);openForm(p.id)});
   });
-  $("ptCount").textContent=`Punten (${points.length})`;
+  $("ptCount").textContent=`Lijst (${points.length})`;
 }
 function save(){ls.set(LS,points);drawPoints()}
 function openForm(id){
@@ -510,11 +598,11 @@ function renderAreas(){
   el.querySelectorAll("[data-toon]").forEach(b=>b.addEventListener("click",()=>{const g=gebieden.find(x=>x.id===b.dataset.toon);closeSheets();map.fitBounds(L.latLngBounds(g.punten.map(ll)),{padding:[40,40],maxZoom:18})}));
   el.querySelectorAll("[data-bewerk]").forEach(b=>b.addEventListener("click",()=>openArea(b.dataset.bewerk)));
 }
-$("btnAreas").addEventListener("click",()=>{if($("sheetAreas").hidden){renderAreas();openSheet("sheetAreas")}else closeSheets()});
+$("btnAreas").addEventListener("click",()=>togglePanel("sheetAreas"));
 
 // Tekenen: tik hoekpunten aan, sluit door op het eerste punt te tikken of op Klaar
-function startTekenen(){closeSheets();tekenen={pts:[]};map.doubleClickZoom.disable();$("dock").hidden=$("btnHome").hidden=true;$("drawbar").hidden=false;updTeken()}
-function stopTekenen(){tekenen=null;map.doubleClickZoom.enable();$("dock").hidden=$("btnHome").hidden=false;$("drawbar").hidden=true}
+function startTekenen(){closeSheets();tekenen={pts:[]};map.doubleClickZoom.disable();$("gpsbar").hidden=$("rail").hidden=true;$("drawbar").hidden=false;updTeken()}
+function stopTekenen(){tekenen=null;map.doubleClickZoom.enable();$("gpsbar").hidden=$("rail").hidden=false;$("drawbar").hidden=true}
 function updTeken(){
   tekLayer.clearLayers();const p=tekenen.pts;
   if(p.length>2)L.polygon(p,{stroke:false,fillColor:"#f2c200",fillOpacity:.2,interactive:false}).addTo(tekLayer);
