@@ -118,6 +118,11 @@ textarea{min-height:70px}
 .drawbar{position:fixed;z-index:1050;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 64px);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-weight:600}
 .drawbar .row{margin-top:8px}
 .drawbar .btn{flex:1}
+/* versleepbare hoekpunten: groot aanraakvlak, kleine stip */
+.vtx{width:36px;height:36px;display:grid;place-items:center;cursor:grab;touch-action:none}
+.vtx::after{content:"";width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #111;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+.vtx.eerste::after{width:22px;height:22px;background:#f2c200}
+.leaflet-dragging .vtx{cursor:grabbing}
 .btn:disabled{opacity:.45;cursor:default}
 [hidden]{display:none!important}
 .toast{position:fixed;z-index:1200;left:50%;top:calc(env(safe-area-inset-top,0px) + 72px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-weight:600;max-width:90vw;text-align:center}
@@ -700,14 +705,23 @@ $("btnAreas").addEventListener("click",()=>togglePanel("sheetAreas"));
 
 // Tekenen: tik hoekpunten aan, sluit door op het eerste punt te tikken of op Klaar
 function startTekenen(){closeSheets();tekenen={pts:[]};map.doubleClickZoom.disable();$("gpsbar").hidden=$("rail").hidden=true;$("drawbar").hidden=false;updTeken()}
-function stopTekenen(){tekenen=null;map.doubleClickZoom.enable();$("gpsbar").hidden=$("rail").hidden=false;$("drawbar").hidden=true}
-function updTeken(){
+function stopTekenen(){tekenen=null;tekPunten.clearLayers();map.doubleClickZoom.enable();$("gpsbar").hidden=$("rail").hidden=false;$("drawbar").hidden=true}
+// De vorm (vlak + stippellijn) apart van de hoekpunten, zodat slepen de punten niet steeds opnieuw aanmaakt
+const tekPunten=L.layerGroup().addTo(map);
+function tekenVorm(){
   tekLayer.clearLayers();const p=tekenen.pts;
   if(p.length>2)L.polygon(p,{stroke:false,fillColor:"#f2c200",fillOpacity:.2,interactive:false}).addTo(tekLayer);
   if(p.length>1)L.polyline(p,{color:"#111",weight:3,dashArray:"6 6",interactive:false}).addTo(tekLayer);
-  p.forEach((q,i)=>{const m=L.circleMarker(q,{radius:i?6:12,color:"#111",weight:2,fillColor:i?"#fff":"#f2c200",fillOpacity:1,bubblingMouseEvents:false}).addTo(tekLayer);
-    if(i===0)m.on("click",()=>{if(tekenen&&tekenen.pts.length>=3)sluitTekenen()})});
-  $("drawHint").textContent=p.length<3?`Tik de hoekpunten van het gebied aan (${p.length} van minstens 3).`:`${p.length} hoekpunten. Tik op het eerste (gele) punt of op Klaar.`;
+}
+function updTeken(){
+  tekenVorm();tekPunten.clearLayers();const p=tekenen.pts;
+  // Hoekpunten zijn versleepbaar; het eerste (gele) punt aantikken sluit het gebied
+  p.forEach((q,i)=>{
+    const m=L.marker(q,{draggable:true,autoPan:true,keyboard:false,icon:L.divIcon({className:"",html:`<div class="vtx${i?"":" eerste"}"></div>`,iconSize:[36,36],iconAnchor:[18,18]})}).addTo(tekPunten);
+    m.on("drag",e=>{tekenen.pts[i]=[e.latlng.lat,e.latlng.lng];tekenVorm()});
+    m.on("click",()=>{if(i===0&&tekenen&&tekenen.pts.length>=3)sluitTekenen()});
+  });
+  $("drawHint").textContent=p.length<3?`Tik de hoekpunten van het gebied aan (${p.length} van minstens 3). Sleep een punt om het te verschuiven.`:`${p.length} hoekpunten. Sleep een punt om het te verschuiven. Tik op het eerste (gele) punt of op Klaar.`;
   $("drawDone").disabled=p.length<3;$("drawUndo").disabled=!p.length;
 }
 function voegPunt(latlng){map.closePopup();tekenen.pts.push([latlng.lat,latlng.lng]);updTeken()}
