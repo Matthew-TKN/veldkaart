@@ -33,7 +33,7 @@ body{background:var(--bg);color:var(--ink);font:15px/1.4 var(--f-ui);font-varian
 .search input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;padding:10px 12px;outline:none}
 .search button{border:0;background:transparent;color:var(--accent);font:600 .9rem var(--f-ui);padding:0 12px;cursor:pointer}
 .dock{position:fixed;z-index:1000;left:0;right:0;bottom:0;padding:8px max(12px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 10px) max(12px,env(safe-area-inset-left,0px));display:flex;gap:8px;justify-content:center;pointer-events:none}
-.dock button{pointer-events:auto;flex:1;max-width:160px;min-height:52px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 .92rem var(--f-ui);box-shadow:0 2px 10px rgba(0,0,0,.2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.dock button{pointer-events:auto;flex:1;min-width:0;max-width:160px;min-height:52px;padding:4px 2px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 .86rem var(--f-ui);white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 .dock button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .dock svg{width:22px;height:22px}
 .sheet{position:fixed;z-index:1100;left:0;right:0;bottom:0;max-height:72vh;overflow:auto;background:var(--surface);border-top-left-radius:18px;border-top-right-radius:18px;box-shadow:0 -6px 24px rgba(0,0,0,.25);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px))}
@@ -60,11 +60,21 @@ textarea{min-height:70px}
 .hint{font-size:.82rem;color:var(--muted);margin-top:6px}
 .list{display:grid;gap:8px;margin-top:8px}
 .pt{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--sunk)}
-.pt .n{min-width:38px;height:38px;border-radius:9px;display:grid;place-items:center;color:#fff;font:700 1rem var(--f-head);background:var(--accent)}
+.pt .n{position:relative;min-width:44px;height:38px;padding:0 6px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:3px;color:#fff;font:700 1rem var(--f-head);background:var(--c,var(--accent));white-space:nowrap}
+.pt .n i{font-style:normal;font-size:.85rem;opacity:.95}
 .pt .meta{font-size:.82rem;color:var(--muted)}
-.e1{background:var(--ok)!important}.e2{background:var(--warn)!important}.e3{background:var(--bad)!important}.park{background:var(--park)!important}
-.mk{display:grid;place-items:center;width:28px;height:28px;border-radius:14px 14px 14px 3px;border:2px solid #fff;color:#fff;font:700 .78rem var(--f-ui);background:#0f5f74;box-shadow:0 1px 4px rgba(0,0,0,.45)}
-.mk.e1{background:#2e7a35!important}.mk.e2{background:#a86400!important}.mk.e3{background:#b9352a!important}.mk.park{background:#3d7d2a!important}
+/* puntmarker: nummer + eerste letter van wie het opnam, kleur per persoon, stip voor de ernst */
+.mk{position:relative;display:inline-flex;align-items:center;gap:3px;height:28px;padding:0 7px;border-radius:14px 14px 14px 3px;border:2px solid #fff;color:#fff;font:700 .8rem var(--f-ui);background:var(--c,#0f5f74);box-shadow:0 1px 4px rgba(0,0,0,.45);white-space:nowrap}
+.mk i{font-style:normal;font-size:.74rem;opacity:.95}
+.mk s,.pt .n s{position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;border:2px solid #fff}
+.d1{background:#2e7a35}.d2{background:#e0a100}.d3{background:#b9352a}
+.glabel{display:inline-block;padding:2px 7px;border-radius:8px;border:2px solid #fff;color:#13201c;font:700 .8rem var(--f-ui);background:var(--c);box-shadow:0 1px 4px rgba(0,0,0,.4);white-space:nowrap}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:8px;border:1px solid rgba(0,0,0,.25)}
+.drawbar{position:fixed;z-index:1050;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 64px);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-weight:600}
+.drawbar .row{margin-top:8px}
+.drawbar .btn{flex:1}
+.btn:disabled{opacity:.45;cursor:default}
+[hidden]{display:none!important}
 .toast{position:fixed;z-index:1200;left:50%;top:calc(env(safe-area-inset-top,0px) + 72px);transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-weight:600;max-width:90vw;text-align:center}
 .leaflet-popup-content{font:14px/1.4 var(--f-ui);margin:10px 12px}
 .leaflet-popup-content table{border-collapse:collapse}
@@ -88,9 +98,10 @@ textarea{min-height:70px}
   </form>
 </div>
 
-<div class="dock">
+<div class="dock" id="dock">
   <button type="button" id="btnLayers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 13 10 5 10-5"/></svg>Lagen</button>
   <button type="button" id="btnLocate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Mijn locatie</button>
+  <button type="button" id="btnAreas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7 10 3l10 5-3 12-11-2Z"/><circle cx="4" cy="7" r="1.6" fill="currentColor"/><circle cx="20" cy="8" r="1.6" fill="currentColor"/><circle cx="6" cy="18" r="1.6" fill="currentColor"/></svg><span id="areaCount">Gebieden</span></button>
   <button type="button" id="btnPoints"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg><span id="ptCount">Punten (0)</span></button>
 </div>
 
@@ -102,7 +113,8 @@ textarea{min-height:70px}
   <div class="opts" id="baseOpts"></div>
   <div class="lbl">Bovenop</div>
   <div class="opts">
-    <label><input type="checkbox" id="ovArea" checked><span>Onderzoeksgebied<small>De vier randwegen, opgehaald bij MI-GLIS</small></span></label>
+    <label><input type="checkbox" id="ovArea" checked><span>Onderzoeksgebied<small>Magentakanaalweg, Nieuw Weergevondenweg, Santodorpweg / Rambali Mathoeraweg en Frederikshoopweg</small></span></label>
+    <label><input type="checkbox" id="ovGeb" checked><span>Mijn gebieden<small>Getekende blokken: groen gecheckt, geel te checken</small></span></label>
     <label><input type="checkbox" id="ovParcels"><span>Percelen (MI-GLIS)<small>Perceelgrenzen en gegevens, zichtbaar vanaf ver inzoomen</small></span></label>
     <label><input type="checkbox" id="ovPoints" checked><span>Mijn punten</span></label>
   </div>
@@ -120,6 +132,50 @@ textarea{min-height:70px}
     <a class="btn" id="gmLink" target="_blank" rel="noopener">Google Maps</a>
     <button class="btn primary" id="addHere" type="button">Punt hier</button>
   </div>
+  <div id="placeAreas"></div>
+</section>
+
+<!-- TEKENEN -->
+<div class="drawbar" id="drawbar" hidden>
+  <div id="drawHint">Tik de hoekpunten aan</div>
+  <div class="row">
+    <button class="btn" type="button" id="drawUndo">Ongedaan</button>
+    <button class="btn primary" type="button" id="drawDone">Klaar</button>
+    <button class="btn" type="button" id="drawStop">Stop</button>
+  </div>
+</div>
+
+<!-- GEBIEDEN -->
+<section class="sheet" id="sheetAreas" hidden>
+  <div class="grab"></div><button class="close" data-close aria-label="Sluiten">×</button>
+  <h2>Gebieden</h2>
+  <p class="hint" style="margin-top:0">Teken een blok of stuk wijk en kleur het groen (gecheckt) of geel (nog te checken). Straten die grotendeels in het gebied liggen, kleuren mee.</p>
+  <div class="row"><button class="btn primary" type="button" id="newArea" style="flex:1">Nieuw gebied tekenen</button></div>
+  <div class="list" id="areaList"></div>
+</section>
+
+<!-- GEBIED -->
+<section class="sheet" id="sheetArea" hidden>
+  <div class="grab"></div><button class="close" data-close aria-label="Sluiten">×</button>
+  <h2 id="areaTitle">Nieuw gebied</h2>
+  <form id="areaForm">
+    <div class="lbl">Status</div>
+    <div class="chips">
+      <input type="radio" name="kleur" id="g1" value="groen"><label for="g1"><span class="sw" style="background:#2e9e4a"></span>Groen · gecheckt</label>
+      <input type="radio" name="kleur" id="g2" value="geel" checked><label for="g2"><span class="sw" style="background:#f2c200"></span>Geel · te checken</label>
+    </div>
+    <div class="lbl">Straten die grotendeels erin liggen</div>
+    <div id="areaStreets"></div>
+    <div class="lbl"><label for="areaNote">Notitie</label></div>
+    <textarea id="areaNote" placeholder="Wat is hier gecheckt of nog te doen?"></textarea>
+    <div class="lbl"><label for="areaDoor">Door</label></div>
+    <select id="areaDoor"></select>
+    <div class="row">
+      <button class="btn primary" type="submit" id="areaSave" style="flex:1">Opslaan</button>
+      <button class="btn danger" type="button" id="areaDel" hidden>Verwijderen</button>
+    </div>
+    <div class="row" id="areaDelConfirm" hidden><span style="align-self:center">Zeker weten?</span><button class="btn danger" type="button" id="areaDelYes">Ja, verwijderen</button><button class="btn" type="button" id="areaDelNo">Nee</button></div>
+  </form>
 </section>
 
 <!-- NIEUW PUNT -->
@@ -187,7 +243,7 @@ textarea{min-height:70px}
 "use strict";
 const $=s=>document.getElementById(s);
 const esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const LS="veldkaart-magenta-punten", LSB="veldkaart-magenta-base", LSD="veldkaart-magenta-door";
+const LS="veldkaart-magenta-punten", LSB="veldkaart-magenta-base", LSD="veldkaart-magenta-door", LSG="veldkaart-magenta-gebieden";
 const ls={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)}
 const MIGLIS="https://services2.arcgis.com/CK9GXvmosMB7QXv8/arcgis/rest/services/";
@@ -216,46 +272,28 @@ document.querySelectorAll('input[name="base"]').forEach(r=>r.addEventListener("c
 }));
 
 /* ---------- panelen ---------- */
-const sheets=["sheetLayers","sheetPlace","sheetForm","sheetPoints"];
+const sheets=["sheetLayers","sheetPlace","sheetForm","sheetPoints","sheetAreas","sheetArea"];
 function openSheet(id){sheets.forEach(s=>$(s).hidden=s!==id)}
-function closeSheets(){sheets.forEach(s=>$(s).hidden=true)}
+function closeSheets(){sheets.forEach(s=>$(s).hidden=true);if(!tekenen)tekLayer.clearLayers()}
 document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",closeSheets));
 $("btnLayers").addEventListener("click",()=>$("sheetLayers").hidden?openSheet("sheetLayers"):closeSheets());
 $("btnPoints").addEventListener("click",()=>{if($("sheetPoints").hidden){renderList();openSheet("sheetPoints")}else closeSheets()});
 
-/* ---------- onderzoeksgebied via MI-GLIS straten ---------- */
+/* ---------- onderzoeksgebied: de vier randwegen, afgeknipt op de hoekpunten ---------- */
+// Uit MI-GLIS Strpln (okt 2026), [lng,lat]. Elke weg loopt van hoek tot hoek, samen vormen ze de grens.
+const GRENS={"west":[[-55.232501,5.785093],[-55.230257,5.789244],[-55.230184,5.789356],[-55.230116,5.789471],[-55.230054,5.78959],[-55.229997,5.789711],[-55.229947,5.789835],[-55.229902,5.789961],[-55.229863,5.79009],[-55.22983,5.790219],[-55.229804,5.790351],[-55.229784,5.790483],[-55.229936,5.794867]],"noord":[[-55.229936,5.794867],[-55.229596,5.794756],[-55.22953,5.794736],[-55.228123,5.794278],[-55.227436,5.794066],[-55.227311,5.794029],[-55.227188,5.793988],[-55.227065,5.793942],[-55.226944,5.793893],[-55.226258,5.79359],[-55.225088,5.793078],[-55.224417,5.792785],[-55.224307,5.792739],[-55.224195,5.792698],[-55.224081,5.792663],[-55.223966,5.792633],[-55.223956,5.792631],[-55.223944,5.792628],[-55.222778,5.792375],[-55.222418,5.792297],[-55.221732,5.792152],[-55.221255,5.792049]],"oost":[[-55.221316,5.792062],[-55.221342,5.791964],[-55.221357,5.7919],[-55.221375,5.791818],[-55.22139,5.791726],[-55.221418,5.791608],[-55.221427,5.791511],[-55.221446,5.791405],[-55.221486,5.791217],[-55.221568,5.790885],[-55.22164,5.790548],[-55.221658,5.790417],[-55.221686,5.790306],[-55.22172,5.790197],[-55.221761,5.79009],[-55.222249,5.788891],[-55.222368,5.788623],[-55.222395,5.788567],[-55.222418,5.788504],[-55.222442,5.788457],[-55.222473,5.788403],[-55.222497,5.788355],[-55.222531,5.788299],[-55.222568,5.788233],[-55.223046,5.787324],[-55.223139,5.78716],[-55.223162,5.787118],[-55.22318,5.787065],[-55.223197,5.787001],[-55.22343,5.787012],[-55.223439,5.787005],[-55.223446,5.786997],[-55.225427,5.783371],[-55.225465,5.783269],[-55.225474,5.783232],[-55.225479,5.783194]],"zuid":[[-55.225479,5.783194],[-55.22549,5.783195],[-55.225715,5.783211],[-55.225924,5.783209],[-55.226058,5.783212],[-55.226219,5.783223],[-55.226347,5.783232],[-55.226444,5.783237],[-55.226665,5.78326],[-55.227058,5.783291],[-55.227588,5.783331],[-55.228265,5.783382],[-55.228361,5.78339],[-55.228461,5.783397],[-55.228534,5.783404],[-55.228607,5.783416],[-55.228679,5.783433],[-55.228749,5.783455],[-55.228884,5.783492],[-55.229034,5.783552],[-55.229164,5.783595],[-55.229227,5.783623],[-55.229485,5.783731],[-55.230169,5.784033],[-55.231799,5.784783],[-55.232052,5.784889],[-55.232452,5.785078],[-55.232501,5.785093]]};
+const RAND=[["west","Magentakanaalweg"],["noord","Nieuw Weergevondenweg"],["oost","Santodorpweg / Rambali Mathoeraweg"],["zuid","Frederikshoopweg"]];
+const ll=c=>[c[1],c[0]];
+const RING=[...GRENS.west,...GRENS.noord.slice(1),...GRENS.oost.slice(1),...GRENS.zuid.slice(1,-1)];
 const areaGroup=L.layerGroup().addTo(map);
-const KEYS=[["MAGENTAKANAAL","Magentakanaalweg"],["WEERGEVONDEN","Nieuw Weergevondenweg"],["RAMBALI","Rambali Mathurweg"],["FREDERIKSHOOP","Frederikshoopweg"]];
+const areaPoly=L.polygon(RING.map(ll),{stroke:false,fillColor:"#e0412f",fillOpacity:.07,interactive:false}).addTo(areaGroup);
+RAND.forEach(([k,naam])=>L.polyline(GRENS[k].map(ll),{color:"#e0412f",weight:5,opacity:.9}).bindPopup(`<b>${esc(naam)}</b><br>Grens onderzoeksgebied`).addTo(areaGroup));
+map.fitBounds(areaPoly.getBounds(),{padding:[30,30]});
+$("ovArea").addEventListener("change",e=>e.target.checked?areaGroup.addTo(map):map.removeLayer(areaGroup));
 async function queryStreets(where){
   const u=STREETS_LAYER+"/query?"+new URLSearchParams({where,outFields:"STREETNAME,RESSORTNAM",returnGeometry:"true",outSR:"4326",f:"geojson"});
   const r=await fetch(u);if(!r.ok)throw new Error("http "+r.status);return r.json();
 }
-function segs(features){const out=[];features.forEach(f=>{const g=f.geometry;if(!g)return;const paths=g.type==="LineString"?[g.coordinates]:g.type==="MultiLineString"?g.coordinates:[];paths.forEach(p=>{for(let i=0;i<p.length-1;i++)out.push([p[i],p[i+1]])})});return out}
-function inter(a,b){const [p,p2]=a,[q,q2]=b;const r=[p2[0]-p[0],p2[1]-p[1]],s=[q2[0]-q[0],q2[1]-q[1]];const d=r[0]*s[1]-r[1]*s[0];if(Math.abs(d)<1e-14)return null;const t=((q[0]-p[0])*s[1]-(q[1]-p[1])*s[0])/d,u=((q[0]-p[0])*r[1]-(q[1]-p[1])*r[0])/d;return(t>=-0.02&&t<=1.02&&u>=-0.02&&u<=1.02)?[p[0]+t*r[0],p[1]+t*r[1]]:null}
-function corner(fa,fb){const A=segs(fa),B=segs(fb);for(const a of A)for(const b of B){const x=inter(a,b);if(x)return{pt:x,exact:true}}
-  let best=null,bd=Infinity;A.forEach(a=>a.forEach(pa=>B.forEach(b=>b.forEach(pb=>{const d=(pa[0]-pb[0])**2+(pa[1]-pb[1])**2;if(d<bd){bd=d;best=[(pa[0]+pb[0])/2,(pa[1]+pb[1])/2]}}))));return best?{pt:best,exact:false}:null}
-async function loadArea(){
-  try{
-    const where=KEYS.map(([k])=>`UPPER(STREETNAME) LIKE '%${k}%'`).join(" OR ");
-    const gj=await queryStreets(where);
-    const byKey={};KEYS.forEach(([k])=>byKey[k]=(gj.features||[]).filter(f=>String(f.properties.STREETNAME||"").toUpperCase().includes(k)));
-    const found=KEYS.filter(([k])=>byKey[k].length);
-    if(!found.length){toast("Randwegen niet gevonden bij MI-GLIS. Zoek een straat bovenin.");return}
-    const lines=L.geoJSON({type:"FeatureCollection",features:found.flatMap(([k])=>byKey[k])},{style:{color:"#e0412f",weight:5,opacity:.9},
-      onEachFeature:(f,l)=>l.bindPopup(`<b>${esc(f.properties.STREETNAME)}</b><br>${esc(f.properties.RESSORTNAM||"")}`)}).addTo(areaGroup);
-    if(found.length===4){
-      const pairs=[["MAGENTAKANAAL","WEERGEVONDEN"],["WEERGEVONDEN","RAMBALI"],["RAMBALI","FREDERIKSHOOP"],["FREDERIKSHOOP","MAGENTAKANAAL"]];
-      const cs=pairs.map(([a,b])=>corner(byKey[a],byKey[b]));
-      if(cs.every(Boolean)){
-        const poly=L.polygon(cs.map(c=>[c.pt[1],c.pt[0]]),{color:"#e0412f",weight:2,dashArray:"6 6",fillColor:"#e0412f",fillOpacity:.06,interactive:false}).addTo(areaGroup);
-        map.fitBounds(poly.getBounds(),{padding:[30,30]});return;
-      }
-    }
-    map.fitBounds(lines.getBounds(),{padding:[30,30]});
-    if(found.length<4)toast("Niet alle randwegen gevonden; het gebied is bij benadering.");
-  }catch(e){toast("Kon de randwegen niet ophalen. Controleer de internetverbinding.")}
-}
-$("ovArea").addEventListener("change",e=>e.target.checked?areaGroup.addTo(map):map.removeLayer(areaGroup));
 
 /* ---------- zoeken ---------- */
 const searchLayer=L.layerGroup().addTo(map);
@@ -302,12 +340,19 @@ $("btnLocate").addEventListener("click",()=>{
   map.locate({watch:true,enableHighAccuracy:true,setView:false,maximumAge:5000});
 });
 let firstFix=true;
+let placeIsMe=false,warnedAcc=false;
 map.on("locationfound",e=>{
-  lastPos={lat:e.latlng.lat,lng:e.latlng.lng,acc:Math.round(e.accuracy)};
-  if(!me){me=L.circleMarker(e.latlng,{radius:8,color:"#fff",weight:3,fillColor:"#1a73e8",fillOpacity:1}).addTo(map);meAcc=L.circle(e.latlng,{radius:e.accuracy,color:"#1a73e8",weight:1,fillOpacity:.1,interactive:false}).addTo(map);
+  const acc=Math.round(e.accuracy);
+  lastPos={lat:e.latlng.lat,lng:e.latlng.lng,acc};
+  const col=acc<=25?"#1a73e8":acc<=75?"#a86400":"#b9352a";
+  if(!me){me=L.circleMarker(e.latlng,{radius:8,color:"#fff",weight:3,fillColor:col,fillOpacity:1}).addTo(map);meAcc=L.circle(e.latlng,{radius:e.accuracy,color:col,weight:1.5,fillOpacity:.12,interactive:false}).addTo(map);
     me.on("click",()=>showPlace(lastPos.lat,lastPos.lng,lastPos.acc,true))}
-  else{me.setLatLng(e.latlng);meAcc.setLatLng(e.latlng).setRadius(e.accuracy)}
-  if(firstFix){map.setView(e.latlng,Math.max(map.getZoom(),17));firstFix=false;showPlace(lastPos.lat,lastPos.lng,lastPos.acc,true)}
+  else{me.setLatLng(e.latlng).setStyle({fillColor:col});meAcc.setLatLng(e.latlng).setRadius(e.accuracy).setStyle({color:col})}
+  $("btnLocate").lastChild.textContent=` ± ${acc} m`;
+  if(firstFix){map.setView(e.latlng,Math.max(map.getZoom(),17));firstFix=false;showPlace(lastPos.lat,lastPos.lng,acc,true)}
+  else if(placeIsMe&&!$("sheetPlace").hidden){showPlace(lastPos.lat,lastPos.lng,acc,true)}
+  if(acc>75&&!warnedAcc){warnedAcc=true;toast(`Locatie onnauwkeurig (± ${acc} m). Ga naar buiten en wacht even, of tik zelf de plek aan op de luchtfoto.`)}
+  if(acc<=25&&warnedAcc){warnedAcc=false;toast(`Locatie nauwkeurig (± ${acc} m)`)}
 });
 map.on("locationerror",e=>{follow=false;$("btnLocate").classList.remove("on");toast(e.code===1?"Geef de browser toestemming voor je locatie":"Locatie niet gevonden")});
 
@@ -318,13 +363,24 @@ function showPlace(lat,lng,acc,isMe){
   place={lat,lng,acc:acc||null};
   $("placeTitle").textContent=isMe?"Mijn locatie":"Gekozen plek";
   $("placeCoord").textContent=`${fmt(lat)}, ${fmt(lng)}`;
-  $("placeAcc").textContent=acc?`Nauwkeurigheid ± ${acc} m`:"Tik op 'Punt hier' om deze plek vast te leggen.";
+  placeIsMe=!!isMe;
+  const pa=$("placeAcc");
+  if(acc){pa.textContent=acc<=25?`Nauwkeurigheid ± ${acc} m (goed)`:acc<=75?`Nauwkeurigheid ± ${acc} m. Wacht even, dan wordt het nauwkeuriger.`:`Nauwkeurigheid ± ${acc} m: te grof. Ga naar buiten en wacht even, of tik zelf de juiste plek aan op de luchtfoto.`;
+    pa.style.color=acc<=25?"var(--ok)":acc<=75?"var(--warn)":"var(--bad)";pa.style.fontWeight="600"}
+  else{pa.textContent="Tik op 'Punt hier' om deze plek vast te leggen.";pa.style.color="";pa.style.fontWeight=""}
   $("gmLink").href=`https://www.google.com/maps?q=${fmt(lat)},${fmt(lng)}`;
   if(tempMarker)map.removeLayer(tempMarker);
   if(!isMe)tempMarker=L.circleMarker([lat,lng],{radius:7,color:"#111",weight:2,fillColor:"#ffd400",fillOpacity:1}).addTo(map);
+  const inG=gebieden.filter(g=>inRing([lng,lat],g.punten));
+  $("placeAreas").innerHTML=inG.map(g=>`<div class="row" style="align-items:center"><span class="glabel" style="--c:${KLEUR[g.kleur].c}">G${g.nr}</span><span style="flex:1">Ligt in gebied G${g.nr} · ${KLEUR[g.kleur].t.toLowerCase()}</span><button class="btn" type="button" data-geb="${g.id}">Bewerk</button></div>`).join("");
+  $("placeAreas").querySelectorAll("[data-geb]").forEach(b=>b.addEventListener("click",()=>openArea(b.dataset.geb)));
   openSheet("sheetPlace");
 }
-map.on("click",e=>{if(!$("sheetForm").hidden)return;showPlace(e.latlng.lat,e.latlng.lng,null,false)});
+map.on("click",e=>{
+  if(tekenen){map.closePopup();tekenen.pts.push([e.latlng.lat,e.latlng.lng]);updTeken();return}
+  if(!$("sheetForm").hidden||!$("sheetArea").hidden)return;
+  showPlace(e.latlng.lat,e.latlng.lng,null,false);
+});
 $("copyCoord").addEventListener("click",async()=>{const t=`${fmt(place.lat)}, ${fmt(place.lng)}`;try{await navigator.clipboard.writeText(t);toast("Coördinaten gekopieerd")}catch(e){toast(t)}});
 $("addHere").addEventListener("click",()=>openForm(null));
 
@@ -332,11 +388,14 @@ $("addHere").addEventListener("click",()=>openForm(null));
 let points=ls.get(LS,[]);let editing=null;
 const ptLayer=L.layerGroup().addTo(map);
 $("ovPoints").addEventListener("change",e=>e.target.checked?ptLayer.addTo(map):map.removeLayer(ptLayer));
-function cls(p){return p.soort==="Parklocatie"?"park":p.ernst?"e"+p.ernst:""}
+// Kleur per persoon: Matthew en Natanaël groen, Natasha en Sjanaz roze
+const MENSEN={"Matthew":"#2e8b3e","Natanaël":"#2e8b3e","Natasha":"#d63384","Sjanaz":"#d63384","Riswand":"#0f5f74"};
+const kleurVan=p=>MENSEN[p.door]||"#6b7a74";
+const badge=p=>`<b>${p.nr}</b>${p.door?`<i>${esc(p.door[0].toUpperCase())}</i>`:""}${p.ernst?`<s class="d${esc(p.ernst)}"></s>`:""}`;
 function drawPoints(){
   ptLayer.clearLayers();
   points.forEach(p=>{
-    const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",html:`<div class="mk ${cls(p)}">${p.nr}</div>`,iconSize:[28,28],iconAnchor:[4,28]})}).addTo(ptLayer);
+    const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",html:`<div class="mk" style="--c:${kleurVan(p)}">${badge(p)}</div>`,iconSize:null,iconAnchor:[4,30]})}).addTo(ptLayer);
     m.on("click",ev=>{L.DomEvent.stopPropagation(ev);openForm(p.id)});
   });
   $("ptCount").textContent=`Punten (${points.length})`;
@@ -374,17 +433,19 @@ const ERN={"1":"Klein","2":"Matig","3":"Ernstig"};
 function renderList(){
   const L2=$("ptList");
   if(!points.length){L2.innerHTML=`<p class="hint">Nog geen punten. Tik op de kaart of op Mijn locatie en kies 'Punt hier'.</p>`;return}
-  L2.innerHTML=points.slice().sort((a,b)=>b.nr-a.nr).map(p=>`<div class="pt" data-id="${p.id}"><div class="n ${cls(p)}">${p.nr}</div><div style="min-width:0"><b>${esc(p.soort)}${p.ernst?" · "+ERN[p.ernst]:""}</b>
+  L2.innerHTML=points.slice().sort((a,b)=>b.nr-a.nr).map(p=>`<div class="pt" data-id="${p.id}"><div class="n" style="--c:${kleurVan(p)}">${badge(p)}</div><div style="min-width:0"><b>${esc(p.soort)}${p.ernst?" · "+ERN[p.ernst]:""}</b>
     <div class="meta">${esc(p.door||"")} · ${new Date(p.tijd).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})} · ${fmt(p.lat)}, ${fmt(p.lng)}</div>
     ${(p.tags||[]).length?`<div class="meta">${esc(p.tags.join(", "))}</div>`:""}${p.notitie?`<div>${esc(p.notitie)}</div>`:""}
     <div class="row" style="margin-top:6px"><button class="btn" data-go="${p.id}" type="button">Toon op kaart</button><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps?q=${fmt(p.lat)},${fmt(p.lng)}">Google Maps</a></div></div></div>`).join("");
   L2.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{const p=points.find(x=>x.id===b.dataset.go);closeSheets();map.setView([p.lat,p.lng],18)}));
 }
 function shareText(){
-  return "Veldkaart Magenta, punten\n\n"+points.slice().sort((a,b)=>a.nr-b.nr).map(p=>`P${p.nr} ${p.soort}${p.ernst?" ("+ERN[p.ernst]+")":""}${p.door?" – "+p.door:""}\n${(p.tags||[]).join(", ")}${p.notitie?"\n"+p.notitie:""}\nhttps://www.google.com/maps?q=${fmt(p.lat)},${fmt(p.lng)}`).join("\n\n");
+  let t="Veldkaart Magenta, punten\n\n"+points.slice().sort((a,b)=>a.nr-b.nr).map(p=>`P${p.nr} ${p.soort}${p.ernst?" ("+ERN[p.ernst]+")":""}${p.door?" – "+p.door:""}\n${(p.tags||[]).join(", ")}${p.notitie?"\n"+p.notitie:""}\nhttps://www.google.com/maps?q=${fmt(p.lat)},${fmt(p.lng)}`).join("\n\n");
+  if(gebieden.length)t+="\n\nGebieden\n\n"+gebieden.slice().sort((a,b)=>a.nr-b.nr).map(g=>`G${g.nr} ${g.kleur} (${KLEUR[g.kleur].t.toLowerCase()})${g.door?" – "+g.door:""}\nStraten: ${(g.namen||[]).join(", ")||"–"}${g.notitie?"\n"+g.notitie:""}`).join("\n\n");
+  return t;
 }
 $("shareBtn").addEventListener("click",async()=>{
-  if(!points.length){toast("Nog geen punten");return}
+  if(!points.length&&!gebieden.length){toast("Nog geen punten");return}
   const text=shareText();
   if(navigator.share){try{await navigator.share({title:"Veldkaart Magenta",text});return}catch(e){if(e&&e.name==="AbortError")return}}
   try{await navigator.clipboard.writeText(text);toast("Gekopieerd. Plak het in de groepsapp.")}catch(e){toast("Delen lukt hier niet")}
@@ -397,7 +458,102 @@ $("csvBtn").addEventListener("click",()=>{
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="veldkaart-magenta.csv";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
 });
 
-drawPoints();loadArea();
+/* ---------- gebieden tekenen: groen gecheckt, geel te checken ---------- */
+const KLEUR={groen:{c:"#2e9e4a",t:"Gecheckt"},geel:{c:"#f2c200",t:"Te checken"}};
+let gebieden=ls.get(LSG,[]).filter(g=>g&&Array.isArray(g.punten)&&KLEUR[g.kleur]);
+let straten=null,tekenen=null,editG=null,nieuwRing=null;
+const gebLayer=L.layerGroup().addTo(map), tekLayer=L.layerGroup().addTo(map);
+$("ovGeb").addEventListener("change",e=>e.target.checked?gebLayer.addTo(map):map.removeLayer(gebLayer));
+$("areaDoor").innerHTML=$("door").innerHTML;
+
+function inRing(pt,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const[xi,yi]=ring[i],[xj,yj]=ring[j];if((yi>pt[1])!==(yj>pt[1])&&pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi)c=!c}return c}
+const paths=g=>g.type==="LineString"?[g.coordinates]:g.type==="MultiLineString"?g.coordinates:[];
+// Deel van de straatlengte dat binnen de ring ligt, bemonsterd om de ± 5 m
+function aandeelBinnen(f,ring){
+  let tot=0,bin=0;
+  paths(f.geometry).forEach(p=>{for(let i=0;i<p.length-1;i++){const a=p[i],b=p[i+1];
+    const len=Math.hypot((b[0]-a[0])*Math.cos(a[1]*Math.PI/180),b[1]-a[1])*111320,n=Math.max(1,Math.ceil(len/5));
+    for(let k=0;k<n;k++){const t=(k+.5)/n;if(inRing([a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])],ring))bin+=len/n}tot+=len}});
+  return tot?bin/tot:0;
+}
+const stratenIn=ring=>straten?straten.filter(f=>aandeelBinnen(f,ring)>=0.5):[];
+const namen=fs=>[...new Set(fs.map(f=>(f.properties.STREETNAME||"").trim()).filter(Boolean))].sort().map(s=>s.charAt(0)+s.slice(1).toLowerCase());
+async function laadStraten(){
+  const b=areaPoly.getBounds().pad(0.2);
+  const u=STREETS_LAYER+"/query?"+new URLSearchParams({where:"1=1",geometry:[b.getWest(),b.getSouth(),b.getEast(),b.getNorth()].join(","),geometryType:"esriGeometryEnvelope",inSR:"4326",spatialRel:"esriSpatialRelIntersects",outFields:"FID,STREETNAME",returnGeometry:"true",outSR:"4326",f:"geojson"});
+  try{const r=await fetch(u);if(!r.ok)throw new Error("http "+r.status);const gj=await r.json();straten=(gj.features||[]).filter(f=>f.geometry);drawAreas()}
+  catch(e){straten=null}
+}
+function saveAreas(){ls.set(LSG,gebieden);drawAreas()}
+function drawAreas(){
+  gebLayer.clearLayers();
+  gebieden.forEach(g=>{
+    const k=KLEUR[g.kleur],poly=L.polygon(g.punten.map(ll),{color:k.c,weight:2,fillColor:k.c,fillOpacity:.22,interactive:false}).addTo(gebLayer);
+    if(straten){const fs=stratenIn(g.punten);g.namen=namen(fs);fs.forEach(f=>L.geoJSON(f,{style:{color:k.c,weight:7,opacity:.95},interactive:false}).addTo(gebLayer))}
+    L.marker(poly.getBounds().getCenter(),{interactive:false,keyboard:false,icon:L.divIcon({className:"",html:`<span class="glabel" style="--c:${k.c}">G${g.nr}</span>`,iconSize:null,iconAnchor:[14,12]})}).addTo(gebLayer);
+  });
+  if(straten)ls.set(LSG,gebieden);
+  $("areaCount").textContent=gebieden.length?`Gebieden (${gebieden.length})`:"Gebieden";
+}
+function renderAreas(){
+  const el=$("areaList");
+  if(!gebieden.length){el.innerHTML=`<p class="hint">Nog geen gebieden.</p>`;return}
+  el.innerHTML=gebieden.slice().sort((a,b)=>b.nr-a.nr).map(g=>`<div class="pt"><div class="n" style="--c:${KLEUR[g.kleur].c};color:#13201c">G${g.nr}</div><div style="min-width:0"><b>${KLEUR[g.kleur].t}</b>
+    <div class="meta">${esc(g.door||"")}${g.door?" · ":""}${new Date(g.tijd).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}</div>
+    <div class="meta">${esc((g.namen||[]).join(", ")||"Geen straten gevonden")}</div>${g.notitie?`<div>${esc(g.notitie)}</div>`:""}
+    <div class="row" style="margin-top:6px"><button class="btn" type="button" data-toon="${g.id}">Toon op kaart</button><button class="btn" type="button" data-bewerk="${g.id}">Bewerk</button></div></div></div>`).join("");
+  el.querySelectorAll("[data-toon]").forEach(b=>b.addEventListener("click",()=>{const g=gebieden.find(x=>x.id===b.dataset.toon);closeSheets();map.fitBounds(L.latLngBounds(g.punten.map(ll)),{padding:[40,40],maxZoom:18})}));
+  el.querySelectorAll("[data-bewerk]").forEach(b=>b.addEventListener("click",()=>openArea(b.dataset.bewerk)));
+}
+$("btnAreas").addEventListener("click",()=>{if($("sheetAreas").hidden){renderAreas();openSheet("sheetAreas")}else closeSheets()});
+
+// Tekenen: tik hoekpunten aan, sluit door op het eerste punt te tikken of op Klaar
+function startTekenen(){closeSheets();tekenen={pts:[]};map.doubleClickZoom.disable();$("dock").hidden=true;$("drawbar").hidden=false;updTeken()}
+function stopTekenen(){tekenen=null;map.doubleClickZoom.enable();$("dock").hidden=false;$("drawbar").hidden=true}
+function updTeken(){
+  tekLayer.clearLayers();const p=tekenen.pts;
+  if(p.length>2)L.polygon(p,{stroke:false,fillColor:"#f2c200",fillOpacity:.2,interactive:false}).addTo(tekLayer);
+  if(p.length>1)L.polyline(p,{color:"#111",weight:3,dashArray:"6 6",interactive:false}).addTo(tekLayer);
+  p.forEach((q,i)=>{const m=L.circleMarker(q,{radius:i?6:12,color:"#111",weight:2,fillColor:i?"#fff":"#f2c200",fillOpacity:1,bubblingMouseEvents:false}).addTo(tekLayer);
+    if(i===0)m.on("click",()=>{if(tekenen&&tekenen.pts.length>=3)sluitTekenen()})});
+  $("drawHint").textContent=p.length<3?`Tik de hoekpunten van het gebied aan (${p.length} van minstens 3).`:`${p.length} hoekpunten. Tik op het eerste (gele) punt of op Klaar.`;
+  $("drawDone").disabled=p.length<3;$("drawUndo").disabled=!p.length;
+}
+function sluitTekenen(){
+  const ring=tekenen.pts.map(q=>[q[1],q[0]]);stopTekenen();
+  tekLayer.clearLayers();L.polygon(ring.map(ll),{color:"#111",weight:2,dashArray:"6 6",fillColor:"#f2c200",fillOpacity:.2,interactive:false}).addTo(tekLayer);
+  openArea(null,ring);
+}
+$("newArea").addEventListener("click",startTekenen);
+$("drawUndo").addEventListener("click",()=>{tekenen.pts.pop();updTeken()});
+$("drawDone").addEventListener("click",()=>{if(tekenen.pts.length>=3)sluitTekenen()});
+$("drawStop").addEventListener("click",()=>{stopTekenen();tekLayer.clearLayers()});
+
+function openArea(id,ring){
+  editG=id;const g=id?gebieden.find(x=>x.id===id):null;nieuwRing=g?g.punten:ring;
+  const f=$("areaForm");f.reset();$("areaDelConfirm").hidden=true;
+  f.querySelector(`input[name="kleur"][value="${g?g.kleur:"geel"}"]`).checked=true;
+  $("areaNote").value=g?g.notitie||"":"";$("areaDoor").value=g?g.door||"":ls.get(LSD,"");
+  $("areaTitle").textContent=g?`Gebied G${g.nr}`:"Nieuw gebied";$("areaDel").hidden=!g;$("areaSave").textContent=g?"Wijzigingen opslaan":"Opslaan";
+  const nm=namen(stratenIn(nieuwRing));
+  $("areaStreets").innerHTML=!straten?`<p class="hint" style="margin:0">Straten konden niet geladen worden. Het gebied wordt wel bewaard.</p>`
+    :nm.length?`<div class="chips">${nm.map(n=>`<span class="btn" style="min-height:34px;padding:5px 10px;font-weight:500;background:var(--sunk)">${esc(n)}</span>`).join("")}</div>`
+    :`<p class="hint" style="margin:0">Geen straat ligt grotendeels in dit gebied.</p>`;
+  openSheet("sheetArea");
+}
+$("areaForm").addEventListener("submit",ev=>{
+  ev.preventDefault();
+  const data={kleur:$("areaForm").querySelector('input[name="kleur"]:checked').value,notitie:$("areaNote").value.trim(),door:$("areaDoor").value};
+  if(data.door)ls.set(LSD,data.door);
+  if(editG){const g=gebieden.find(x=>x.id===editG);Object.assign(g,data,{gewijzigd:new Date().toISOString()});toast(`Gebied G${g.nr} bijgewerkt`)}
+  else{const nr=gebieden.reduce((m,g)=>Math.max(m,g.nr),0)+1;gebieden.push({id:"g"+Date.now().toString(36),nr,punten:nieuwRing,tijd:new Date().toISOString(),namen:namen(stratenIn(nieuwRing)),...data});toast(`Gebied G${nr} opgeslagen`)}
+  tekLayer.clearLayers();saveAreas();closeSheets();
+});
+$("areaDel").addEventListener("click",()=>$("areaDelConfirm").hidden=false);
+$("areaDelNo").addEventListener("click",()=>$("areaDelConfirm").hidden=true);
+$("areaDelYes").addEventListener("click",()=>{gebieden=gebieden.filter(g=>g.id!==editG);saveAreas();closeSheets();toast("Gebied verwijderd")});
+
+drawPoints();drawAreas();laadStraten();
 })();
 </script>
 </body>
