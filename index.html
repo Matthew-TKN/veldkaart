@@ -1041,12 +1041,19 @@ const WEGDEK=[["Nieuw Weergevondenweg",5.793312,-55.225623,"asfalt"],
   ["Hoopvolweg",5.789554,-55.228197,"zandweg"],
   ["Vol Genadeweg",5.789099,-55.22674,"zandweg"],
   ["Schusterdruifweg",5.789077,-55.223641,"zandweg"],
-  ["Kroonenburgweg",5.789481,-55.22955,"zandweg"]];
+  ["Kroonenburgweg",5.789481,-55.22955,"zandweg"],
+  // Op de luchtfoto niet duidelijk: beste gok, staat zo in de notitie
+  ["Drie Gebroedersweg",5.793325,-55.226524,"asfalt",1],
+  ["Coresburgweg",5.793188,-55.227994,"asfalt",1],
+  ["Goede Hoopweg",5.791346,-55.227706,"zandweg",1],
+  ["Charlottenburgweg",5.790875,-55.226805,"zandweg",1],
+  ["Nieuwzorgweg",5.78792,-55.228867,"zandweg",1],
+  ["Santodorpweg / Rambali Mathoeraweg",5.787388,-55.223012,"asfalt",1]];
 const WD_TAG="Luchtfoto:";
 const wegdekKlaar=()=>points.some(p=>(p.notitie||"").startsWith(WD_TAG));
 function wegdekBlok(){
   if(!fb||!ik||ik.naam!=="Matthew"||wegdekKlaar())return "";
-  return `<div class="lokaal"><b>Wegdek-punten klaar:</b> ${WEGDEK.length} straten, een punt in het midden van elke straat, met asfalt of zandweg volgens de luchtfoto.
+  return `<div class="lokaal"><b>Wegdek-punten klaar:</b> ${WEGDEK.length} straten, een punt in het midden van elke straat, met asfalt of zandweg volgens de luchtfoto (bij 6 straten een gok).
     <div class="row"><button class="btn primary" type="button" data-wegdek style="flex:1">Toevoegen op naam van Matthew</button></div></div>`;
 }
 async function wegdekToevoegen(btn){
@@ -1054,10 +1061,10 @@ async function wegdekToevoegen(btn){
   btn.disabled=true;
   const {F,db}=fb,b=F.writeBatch(db),nu=new Date().toISOString();
   let nr=points.reduce((m,p)=>Math.max(m,p.nr||0),0);
-  WEGDEK.forEach(([naam,lat,lng,tag])=>{
+  WEGDEK.forEach(([naam,lat,lng,tag,gok])=>{
     const ref=F.doc(F.collection(db,"punten"));
     const data={nr:++nr,lat,lng,nauwkeurigheid:null,tijd:nu,soort:"Wegdek",ernst:"",tags:[tag],
-      notitie:`${WD_TAG} ${naam}, midden van de straat. ${tag==="asfalt"?"Asfalt":"Zandweg"} gezien op de luchtfoto, ter plekke nog controleren.`,door:ik.naam,uid:ik.uid};
+      notitie:`${WD_TAG} ${naam}, midden van de straat. ${tag==="asfalt"?"Asfalt":"Zandweg"} ${gok?"is een gok, de luchtfoto is hier niet duidelijk":"gezien op de luchtfoto"}, ter plekke nog controleren.`,door:ik.naam,uid:ik.uid};
     b.set(ref,data);logRegel(b,"nieuw","punten",ref.id,null,data);
   });
   try{await b.commit();toast(`${WEGDEK.length} wegdek-punten toegevoegd`)}catch(e){btn.disabled=false;fout(e)}
