@@ -77,6 +77,10 @@ body.balk-dicht .leaflet-bottom{bottom:calc(env(safe-area-inset-bottom,0px) + 26
 .lokaal{margin:8px 0;padding:10px 12px;border:1px solid var(--warn);border-radius:12px;background:var(--sunk);font-size:.9rem}
 .lokaal .row{margin-top:8px}
 .naam-bezet{opacity:.5;cursor:not-allowed}
+.naamok{margin-top:12px;padding:12px;border:1px solid var(--accent);border-radius:12px;background:var(--sunk)}
+.naamok p{margin:0;font-weight:600}
+.naamok .btn{flex:1;gap:6px}
+.naamok svg{width:18px;height:18px}
 .naam-bezet small{color:var(--bad)!important}
 /* menu links */
 .shade{position:fixed;inset:0;z-index:1140;background:rgba(0,0,0,.4)}
@@ -224,6 +228,13 @@ textarea{min-height:70px}
   <h2>Wie ben je?</h2>
   <p class="hint" style="margin-top:0">Kies je naam. Een gekozen naam is daarna van jou; niemand anders kan hem nog kiezen. Verkeerd gekozen? Vraag Matthew om hem vrij te geven.</p>
   <div class="opts" id="naamLijst"></div>
+  <div class="naamok" id="naamOk" hidden>
+    <p id="naamOkTxt"></p>
+    <div class="row">
+      <button class="btn primary" type="button" id="naamJa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg>Ja, dat ben ik</button>
+      <button class="btn" type="button" id="naamNee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>Nee</button>
+    </div>
+  </div>
 </section>
 
 <!-- BEHEER -->
@@ -873,17 +884,28 @@ function uitloggen(){fb.A.signOut(fb.auth);closeSheets();toast("Uitgelogd")}
 // Naam kiezen: een gekozen naam is vergrendeld (namen/{naam} + leden/{uid}, samen in één batch)
 function openNaam(){
   if(!ik)return;naamGevraagd=true;
+  const wacht=!$("naamOk").hidden&&$("naamJa").dataset.naam; // keuze die nog bevestigd moet worden
   $("naamLijst").innerHTML=NAMEN.map(n=>{const van=bezet[n];const mij=van===ik.uid;
-    return `<label class="${van&&!mij?"naam-bezet":""}"><input type="radio" name="kiesnaam" value="${esc(n)}" ${van&&!mij?"disabled":""} ${mij?"checked":""}><span>${esc(n)}<small>${mij?"Jij":van?"Bezet":"Vrij"}</small></span></label>`}).join("");
-  $("naamLijst").querySelectorAll("input").forEach(r=>r.addEventListener("change",()=>claim(r.value)));
+    return `<label class="${van&&!mij?"naam-bezet":""}"><input type="radio" name="kiesnaam" value="${esc(n)}" ${van&&!mij?"disabled":""} ${mij||(!van&&n===wacht)?"checked":""}><span>${esc(n)}<small>${mij?"Jij":van?"Bezet":"Vrij"}</small></span></label>`}).join("");
+  // Eerst bevestigen met ✓ of ✗, zodat een misklik de naam niet meteen vastlegt
+  const kies=$("naamLijst").querySelector("input:checked:not(:disabled)");
+  if(!kies||bezet[kies.value]===ik.uid)$("naamOk").hidden=true;
+  $("naamLijst").querySelectorAll("input").forEach(r=>r.addEventListener("change",()=>{
+    $("naamOkTxt").textContent=`Ben jij ${r.value}? Daarna staat deze naam vast op jouw account.`;
+    $("naamJa").dataset.naam=r.value;$("naamOk").hidden=false;
+  }));
   openSheet("sheetNaam");
 }
+$("naamJa").addEventListener("click",()=>{if($("naamJa").dataset.naam)claim($("naamJa").dataset.naam)});
+$("naamNee").addEventListener("click",()=>{$("naamOk").hidden=true;$("naamLijst").querySelectorAll("input").forEach(r=>{if(bezet[r.value]!==ik.uid)r.checked=false})});
 async function claim(naam){
   const {F,db}=fb,b=F.writeBatch(db),nu=new Date().toISOString();
   b.set(F.doc(db,"namen",naam),{uid:ik.uid,sinds:nu});
   b.set(F.doc(db,"leden",ik.uid),{naam,email:ik.email||"",sinds:nu});
-  try{await b.commit();closeSheets();toast(`Welkom, ${naam}`)}
-  catch(e){toast(e.code==="permission-denied"?`${naam} is al door iemand anders gekozen.`:"Lukte niet ("+e.code+")");openNaam()}
+  $("naamJa").disabled=$("naamNee").disabled=true;
+  try{await b.commit();$("naamOk").hidden=true;closeSheets();toast(`Welkom, ${naam}`)}
+  catch(e){toast(e.code==="permission-denied"?`${naam} is al door iemand anders gekozen.`:"Lukte niet ("+e.code+")");$("naamOk").hidden=true;openNaam()}
+  finally{$("naamJa").disabled=$("naamNee").disabled=false}
 }
 // Beheer: namen vrijgeven
 function toonBeheer(){
