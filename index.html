@@ -125,8 +125,9 @@ textarea{min-height:70px}
 /* puntmarker: nummer + eerste letter van wie het opnam, kleur per persoon, stip voor de ernst */
 .mk{position:relative;display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 7px;border-radius:11px;border:2px solid #fff;color:#fff;font:700 .76rem var(--f-ui);background:var(--c,#0f5f74);box-shadow:0 1px 4px rgba(0,0,0,.45);white-space:nowrap}
 /* speld: label erboven, gekantelde druppelvorm met symbool; de punt valt onderaan in het midden (anker 24,58) */
-.spin{width:48px;height:60px;display:flex;flex-direction:column;align-items:center;cursor:pointer}
-.spin .kop{margin-top:4px;width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);display:grid;place-items:center;color:#fff}
+.spin{width:48px;height:62px;display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.spin .steel{width:3px;height:6px;background:#fff;box-shadow:0 0 2px rgba(0,0,0,.4)}
+.spin .kop{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);display:grid;place-items:center;color:#fff}
 .spin .kop svg{width:15px;height:15px;transform:rotate(45deg)}
 .mk i{font-style:normal;font-size:.74rem;opacity:.95}
 .mk s,.pt .n s{position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;border:2px solid #fff}
@@ -612,8 +613,8 @@ function drawPoints(){
   ptLayer.clearLayers();
   points.forEach(p=>{
     // Speld: label (nummer + letter) erboven, punt van de speld precies op de plek
-    const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",iconSize:[48,60],iconAnchor:[24,58],
-      html:`<div class="spin" style="--c:${kleurVan(p)}"><span class="mk">${badge(p)}</span><span class="kop">${symbool(p.soort)}</span></div>`})}).addTo(ptLayer);
+    const m=L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",iconSize:[48,62],iconAnchor:[24,59],
+      html:`<div class="spin" style="--c:${kleurVan(p)}"><span class="mk">${badge(p)}</span><span class="steel"></span><span class="kop">${symbool(p.soort)}</span></div>`})}).addTo(ptLayer);
     m.on("click",ev=>{L.DomEvent.stopPropagation(ev);openForm(p.id)});
   });
   $("ptCount").textContent=`Lijst (${points.length})`;
