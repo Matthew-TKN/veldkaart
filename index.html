@@ -68,6 +68,16 @@ body.balk-dicht .leaflet-bottom{bottom:calc(env(safe-area-inset-bottom,0px) + 26
 .slabel.rand{color:#ffd9d4}
 .namen-uit .slabel{display:none}
 .leaflet-popup-content .row .btn{min-height:40px;padding:7px 12px}
+/* account en gedeelde opslag */
+.acct{margin:4px 0 8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--sunk)}
+.acct b{display:block}
+.acct span.hint{display:block;margin-top:2px;word-break:break-all}
+.acct .row{margin-top:8px}
+.doortxt{font-weight:600;padding:2px 0}
+.lokaal{margin:8px 0;padding:10px 12px;border:1px solid var(--warn);border-radius:12px;background:var(--sunk);font-size:.9rem}
+.lokaal .row{margin-top:8px}
+.naam-bezet{opacity:.5;cursor:not-allowed}
+.naam-bezet small{color:var(--bad)!important}
 /* menu links */
 .shade{position:fixed;inset:0;z-index:1140;background:rgba(0,0,0,.4)}
 .drawer{position:fixed;z-index:1150;top:0;bottom:0;left:0;width:min(320px,86vw);overflow:auto;background:var(--surface);box-shadow:6px 0 24px rgba(0,0,0,.3);padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px))}
@@ -170,6 +180,9 @@ textarea{min-height:70px}
 <div class="shade" id="shade" hidden></div>
 <nav class="drawer" id="sheetMenu" aria-label="Menu" hidden>
   <div class="dhead"><div><b>Veldkaart Magenta</b><span>PW1 Citylab · PTC</span></div><button class="close" data-close aria-label="Sluiten">×</button></div>
+  <div class="acct" id="acct"><p class="hint" style="margin:0">Gedeelde opslag laden…</p></div>
+  <div id="lokaalMenu"></div>
+  <button type="button" class="mi" id="menuBeheer" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 11l2 2 3-4"/></svg>Beheer: namen</button>
   <button type="button" class="mi" data-menu="sheetLayers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 13 10 5 10-5"/></svg>Kaartlagen</button>
   <button type="button" class="mi" data-menu="sheetAreas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7 10 3l10 5-3 12-11-2Z"/></svg>Gebieden</button>
   <button type="button" class="mi" data-menu="sheetPoints"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>Punten</button>
@@ -202,8 +215,24 @@ textarea{min-height:70px}
       <li>Buiten staan, 10 à 30 s wachten tot de stip blauw is. Lukt het niet, tik dan zelf de plek aan op de luchtfoto.</li>
     </ul>
   </details>
-  <p class="hint">Punten en gebieden worden op deze telefoon bewaard. Deel ze na de ronde in de groepsapp.</p>
+  <p class="hint">Punten en gebieden worden gedeeld met de groep. Iedereen met de link kan meekijken; om iets toe te voegen log je in.</p>
 </nav>
+
+<!-- NAAM KIEZEN -->
+<section class="sheet" id="sheetNaam" hidden>
+  <div class="grab"></div><button class="close" data-close aria-label="Sluiten">×</button>
+  <h2>Wie ben je?</h2>
+  <p class="hint" style="margin-top:0">Kies je naam. Een gekozen naam is daarna van jou; niemand anders kan hem nog kiezen. Verkeerd gekozen? Vraag Matthew om hem vrij te geven.</p>
+  <div class="opts" id="naamLijst"></div>
+</section>
+
+<!-- BEHEER -->
+<section class="sheet" id="sheetBeheer" hidden>
+  <div class="grab"></div><button class="close" data-close aria-label="Sluiten">×</button>
+  <h2>Beheer: namen</h2>
+  <p class="hint" style="margin-top:0">Wie welke naam heeft. Geef je een naam vrij, dan kan die persoon (of iemand anders) opnieuw kiezen. Punten en gebieden blijven staan.</p>
+  <div class="list" id="beheerLijst"></div>
+</section>
 
 <!-- LAGEN -->
 <section class="sheet" id="sheetLayers" hidden>
@@ -214,9 +243,9 @@ textarea{min-height:70px}
   <div class="lbl">Bovenop</div>
   <div class="opts">
     <label><input type="checkbox" id="ovArea" checked><span>Onderzoeksgebied<small>Magentakanaalweg, Nieuw Weergevondenweg, Santodorpweg / Rambali Mathoeraweg en Frederikshoopweg</small></span></label>
-    <label><input type="checkbox" id="ovGeb" checked><span>Mijn gebieden<small>Getekende blokken: groen gecheckt, geel te checken</small></span></label>
+    <label><input type="checkbox" id="ovGeb" checked><span>Gebieden<small>Getekende blokken: groen gecheckt, geel te checken</small></span></label>
     <label><input type="checkbox" id="ovParcels"><span>Percelen (MI-GLIS)<small>Perceelgrenzen en gegevens, zichtbaar vanaf ver inzoomen</small></span></label>
-    <label><input type="checkbox" id="ovPoints" checked><span>Mijn punten</span></label>
+    <label><input type="checkbox" id="ovPoints" checked><span>Punten<small>Van de hele groep</small></span></label>
   </div>
   <p class="hint">Tik op een perceel voor de gegevens. Tik ergens op de kaart voor de coördinaten.</p>
 </section>
@@ -268,8 +297,8 @@ textarea{min-height:70px}
     <div class="opts" id="areaChecks"></div>
     <div class="lbl"><label for="areaNote">Notitie</label></div>
     <textarea id="areaNote" placeholder="Wat is hier gecheckt of nog te doen?"></textarea>
-    <div class="lbl"><label for="areaDoor">Door</label></div>
-    <select id="areaDoor"></select>
+    <div class="lbl">Door</div>
+    <div class="doortxt" id="areaDoorTxt"></div>
     <div class="row delrow">
       <button class="btn primary" type="submit" id="areaSave" style="flex:1">Opslaan</button>
       <button class="btn danger" type="button" id="areaDel" hidden>Verwijderen</button>
@@ -316,8 +345,8 @@ textarea{min-height:70px}
     </div>
     <div class="lbl"><label for="notitie">Notitie</label></div>
     <textarea id="notitie" placeholder="Wat zie je? Fotonummers?"></textarea>
-    <div class="lbl"><label for="door">Opgenomen door</label></div>
-    <select id="door"><option value="">Kies…</option><option>Matthew</option><option>Natanaël</option><option>Natasha</option><option>Sjanaz</option><option>Riswand</option></select>
+    <div class="lbl">Opgenomen door</div>
+    <div class="doortxt" id="doorTxt"></div>
     <div class="row delrow">
       <button class="btn primary" type="submit" id="saveBtn" style="flex:1">Opslaan</button>
       <button class="btn danger" type="button" id="delBtn" hidden>Verwijderen</button>
@@ -333,7 +362,8 @@ textarea{min-height:70px}
 <section class="sheet" id="sheetPoints" hidden>
   <div class="grab"></div><button class="close" data-close aria-label="Sluiten">×</button>
   <h2>Mijn punten</h2>
-  <p class="hint" style="margin-top:0">Punten worden op deze telefoon bewaard. Deel ze na de ronde in de groepsapp of download ze voor Excel.</p>
+  <p class="hint" style="margin-top:0">Alle punten van de groep. Deel ze in de groepsapp of download ze voor Excel.</p>
+  <div id="lokaalPunten"></div>
   <div class="row">
     <button class="btn primary" type="button" id="shareBtn">Delen</button>
     <button class="btn" type="button" id="csvBtn">Download CSV</button>
@@ -389,7 +419,7 @@ document.querySelectorAll('input[name="base"]').forEach(r=>r.addEventListener("c
 }));
 
 /* ---------- panelen ---------- */
-const sheets=["sheetLayers","sheetPlace","sheetForm","sheetPoints","sheetAreas","sheetArea","sheetMenu"];
+const sheets=["sheetLayers","sheetPlace","sheetForm","sheetPoints","sheetAreas","sheetArea","sheetMenu","sheetNaam","sheetBeheer"];
 function openSheet(id){sheets.forEach(s=>$(s).hidden=s!==id);$("shade").hidden=id!=="sheetMenu"}
 function closeSheets(){sheets.forEach(s=>$(s).hidden=true);$("shade").hidden=true;if(!tekenen)tekLayer.clearLayers();if(verborgenG){verborgenG=null;drawAreas()}}
 // Paneel openen, of sluiten als het al open is; lijsten eerst bijwerken
@@ -539,11 +569,11 @@ $("copyCoord").addEventListener("click",async()=>{const t=`${fmt(place.lat)}, ${
 $("addHere").addEventListener("click",()=>openForm(null));
 
 /* ---------- punten ---------- */
-let points=ls.get(LS,[]);let editing=null;
+let points=[];let editing=null; // komt live uit Firestore (collectie "punten")
 const ptLayer=L.layerGroup().addTo(map);
 $("ovPoints").addEventListener("change",e=>e.target.checked?ptLayer.addTo(map):map.removeLayer(ptLayer));
 // Kleur per persoon: Matthew en Natanaël groen, Natasha en Sjanaz roze
-const MENSEN={"Matthew":"#2e8b3e","Natanaël":"#2e8b3e","Natasha":"#d63384","Sjanaz":"#d63384","Riswand":"#0f5f74"};
+const MENSEN={"Matthew":"#2e8b3e","Natanaël":"#2e8b3e","Natasha":"#d63384","Sjanaz":"#d63384"};
 const kleurVan=p=>MENSEN[p.door]||"#6b7a74";
 const badge=p=>`<b>${p.nr}</b>${p.door?`<i>${esc(p.door[0].toUpperCase())}</i>`:""}${p.ernst?`<s class="d${esc(p.ernst)}"></s>`:""}`;
 function drawPoints(){
@@ -554,18 +584,21 @@ function drawPoints(){
   });
   $("ptCount").textContent=`Lijst (${points.length})`;
 }
-function save(){ls.set(LS,points);drawPoints()}
 function openForm(id){
-  editing=id;const f=$("ptForm");f.reset();$("delConfirm").hidden=true;
   const p=id?points.find(x=>x.id===id):null;
+  if(!p&&!magSchrijven())return; // nieuw punt: eerst inloggen en een naam hebben
+  editing=id;const f=$("ptForm");f.reset();$("delConfirm").hidden=true;
+  const eigen=!p||magBeheren(p);
+  f.querySelectorAll("input,textarea").forEach(el=>el.disabled=!eigen);
+  $("saveBtn").hidden=!eigen;
   if(p){
     f.querySelector(`input[name="soort"][value="${p.soort}"]`)&&(f.querySelector(`input[name="soort"][value="${p.soort}"]`).checked=true);
     if(p.ernst)f.querySelector(`input[name="ernst"][value="${p.ernst}"]`).checked=true;
     f.querySelectorAll('input[name="tag"]').forEach(c=>c.checked=(p.tags||[]).includes(c.value));
-    $("notitie").value=p.notitie||"";$("door").value=p.door||"";
-    $("formTitle").textContent=`Punt ${p.nr}`;$("formCoord").textContent=`${fmt(p.lat)}, ${fmt(p.lng)}`;$("delBtn").hidden=false;$("saveBtn").textContent="Wijzigingen opslaan";
+    $("notitie").value=p.notitie||"";$("doorTxt").textContent=(p.door||"Onbekend")+(eigen?"":" · alleen "+(p.door||"de maker")+" of de beheerder kan dit wijzigen");
+    $("formTitle").textContent=`Punt ${p.nr}`;$("formCoord").textContent=`${fmt(p.lat)}, ${fmt(p.lng)}`;$("delBtn").hidden=!eigen;$("saveBtn").textContent="Wijzigingen opslaan";
   }else{
-    $("door").value=ls.get(LSD,"");$("formTitle").textContent="Nieuw punt";
+    $("doorTxt").textContent=ik.naam;$("formTitle").textContent="Nieuw punt";
     $("formCoord").textContent=`${fmt(place.lat)}, ${fmt(place.lng)}${place.acc?` (± ${place.acc} m)`:""}`;$("delBtn").hidden=true;$("saveBtn").textContent="Opslaan";
   }
   openSheet("sheetForm");
@@ -573,16 +606,20 @@ function openForm(id){
 $("ptForm").addEventListener("submit",ev=>{
   ev.preventDefault();const f=ev.target;
   const data={soort:f.querySelector('input[name="soort"]:checked').value,ernst:(f.querySelector('input[name="ernst"]:checked')||{}).value||"",
-    tags:[...f.querySelectorAll('input[name="tag"]:checked')].map(c=>c.value),notitie:$("notitie").value.trim(),door:$("door").value};
-  ls.set(LSD,data.door);
-  if(editing){const p=points.find(x=>x.id===editing);Object.assign(p,data,{gewijzigd:new Date().toISOString()});toast(`Punt ${p.nr} bijgewerkt`)}
-  else{const nr=points.reduce((m,p)=>Math.max(m,p.nr),0)+1;points.push({id:"p"+Date.now().toString(36),nr,lat:place.lat,lng:place.lng,nauwkeurigheid:place.acc,tijd:new Date().toISOString(),...data});toast(`Punt ${nr} opgeslagen`)}
+    tags:[...f.querySelectorAll('input[name="tag"]:checked')].map(c=>c.value),notitie:$("notitie").value.trim()};
+  if(editing){const p=points.find(x=>x.id===editing);wijzig("punten",editing,{...data,gewijzigd:new Date().toISOString()});toast(`Punt ${p?p.nr:""} bijgewerkt`)}
+  else{
+    if(!magSchrijven())return;
+    const nr=points.reduce((m,p)=>Math.max(m,p.nr||0),0)+1;
+    schrijf("punten",{nr,lat:place.lat,lng:place.lng,nauwkeurigheid:place.acc??null,tijd:new Date().toISOString(),...data,door:ik.naam,uid:ik.uid});
+    toast(`Punt ${nr} opgeslagen`);
+  }
   if(tempMarker){map.removeLayer(tempMarker);tempMarker=null}
-  save();closeSheets();
+  closeSheets();
 });
 $("delBtn").addEventListener("click",()=>$("delConfirm").hidden=!$("delConfirm").hidden);
 $("delNo").addEventListener("click",()=>$("delConfirm").hidden=true);
-$("delYes").addEventListener("click",()=>{points=points.filter(p=>p.id!==editing);save();closeSheets();toast("Punt verwijderd")});
+$("delYes").addEventListener("click",()=>{wis("punten",editing);closeSheets();toast("Punt verwijderd")});
 const ERN={"1":"Klein","2":"Matig","3":"Ernstig"};
 function renderList(){
   const L2=$("ptList");
@@ -614,11 +651,10 @@ $("csvBtn").addEventListener("click",()=>{
 
 /* ---------- gebieden tekenen: groen gecheckt, geel te checken ---------- */
 const KLEUR={groen:{c:"#2e9e4a",t:"Gecheckt"},geel:{c:"#f2c200",t:"Te checken"}};
-let gebieden=ls.get(LSG,[]).filter(g=>g&&Array.isArray(g.punten)&&KLEUR[g.kleur]);
+let gebieden=[]; // komt live uit Firestore (collectie "gebieden"); de ring staat daar plat als [lng,lat,lng,lat,…]
 let straten=null,tekenen=null,editG=null,nieuwRing=null;
 const gebLayer=L.layerGroup().addTo(map), tekLayer=L.layerGroup().addTo(map);
 $("ovGeb").addEventListener("change",e=>e.target.checked?gebLayer.addTo(map):map.removeLayer(gebLayer));
-$("areaDoor").innerHTML=$("door").innerHTML;
 
 function inRing(pt,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const[xi,yi]=ring[i],[xj,yj]=ring[j];if((yi>pt[1])!==(yj>pt[1])&&pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi)c=!c}return c}
 const paths=g=>g.type==="LineString"?[g.coordinates]:g.type==="MultiLineString"?g.coordinates:[];
@@ -666,10 +702,11 @@ function straatKlik(e,g,k){
   L.popup({maxWidth:270}).setLatLng(e.latlng).setContent(el).openOn(map);
 }
 function haalWeg(g,k){
-  g.uit=[...new Set([...(g.uit||[]),k])];g.gewijzigd=new Date().toISOString();
-  if(g.vlak===false&&!gekozen(g).length){gebieden=gebieden.filter(x=>x!==g);toast(`Gebied G${g.nr} verwijderd`)}
-  else toast(`${mooi(k)} weggehaald uit G${g.nr}`);
-  saveAreas();
+  if(!magSchrijven())return;
+  const uit=[...new Set([...(g.uit||[]),k])],rest=stratenIn(g.punten).filter(f=>!uit.includes(sleutel(f)));
+  if(g.vlak===false&&!rest.length&&magBeheren(g)){wis("gebieden",g.id);toast(`Gebied G${g.nr} verwijderd`);return}
+  wijzig("gebieden",g.id,{uit,namen:namen(rest),gewijzigd:new Date().toISOString(),gewijzigdDoor:ik.naam});
+  toast(`${mooi(k)} weggehaald uit G${g.nr}`);
 }
 async function laadStraten(){
   const b=areaPoly.getBounds().pad(0.2);
@@ -677,7 +714,6 @@ async function laadStraten(){
   try{const r=await fetch(u);if(!r.ok)throw new Error("http "+r.status);const gj=await r.json();straten=(gj.features||[]).filter(f=>f.geometry);drawAreas()}
   catch(e){straten=null}
 }
-function saveAreas(){ls.set(LSG,gebieden);drawAreas()}
 let verborgenG=null; // het gebied dat nu in het paneel staat; het voorbeeld ervan staat in tekLayer
 function drawAreas(){
   gebLayer.clearLayers();
@@ -688,7 +724,6 @@ function drawAreas(){
     if(straten){const fs=gekozen(g);g.namen=namen(fs);tekenStraten(fs,k.c,gebLayer,g)}
     L.marker(poly.getBounds().getCenter(),{interactive:false,keyboard:false,icon:L.divIcon({className:"",html:`<span class="glabel" style="--c:${k.c}">G${g.nr}</span>`,iconSize:null,iconAnchor:[14,12]})}).addTo(gebLayer);
   });
-  if(straten)ls.set(LSG,gebieden);
   $("areaCount").textContent=gebieden.length?`Gebieden (${gebieden.length})`:"Gebieden";
 }
 function renderAreas(){
@@ -704,7 +739,7 @@ function renderAreas(){
 $("btnAreas").addEventListener("click",()=>togglePanel("sheetAreas"));
 
 // Tekenen: tik hoekpunten aan, sluit door op het eerste punt te tikken of op Klaar
-function startTekenen(){closeSheets();tekenen={pts:[]};map.doubleClickZoom.disable();$("gpsbar").hidden=$("rail").hidden=true;$("drawbar").hidden=false;updTeken()}
+function startTekenen(){if(!magSchrijven())return;closeSheets();tekenen={pts:[]};map.doubleClickZoom.disable();$("gpsbar").hidden=$("rail").hidden=true;$("drawbar").hidden=false;updTeken()}
 function stopTekenen(){tekenen=null;tekPunten.clearLayers();map.doubleClickZoom.enable();$("gpsbar").hidden=$("rail").hidden=false;$("drawbar").hidden=true}
 // De vorm (vlak + stippellijn) apart van de hoekpunten, zodat slepen de punten niet steeds opnieuw aanmaakt
 const tekPunten=L.layerGroup().addTo(map);
@@ -750,8 +785,10 @@ function openArea(id,ring){
   verborgenG=id;drawAreas();
   const f=$("areaForm");f.reset();$("areaPop").hidden=true;
   f.querySelector(`input[name="kleur"][value="${g?g.kleur:"geel"}"]`).checked=true;
-  $("areaNote").value=g?g.notitie||"":"";$("areaDoor").value=g?g.door||"":ls.get(LSD,"");
-  $("areaTitle").textContent=g?`Gebied G${g.nr}`:"Nieuw gebied";$("areaDel").hidden=!g;$("areaSave").textContent=g?"Wijzigingen opslaan":"Opslaan";
+  $("areaNote").value=g?g.notitie||"":"";
+  $("areaDoorTxt").textContent=g?(g.door||"Onbekend")+(g.gewijzigdDoor&&g.gewijzigdDoor!==g.door?` · laatst bijgewerkt door ${g.gewijzigdDoor}`:""):(ik&&ik.naam)||"";
+  // Iedereen uit de groep mag de status en de straten bijwerken; verwijderen alleen de maker of de beheerder
+  $("areaTitle").textContent=g?`Gebied G${g.nr}`:"Nieuw gebied";$("areaDel").hidden=!(g&&magBeheren(g));$("areaSave").textContent=g?"Wijzigingen opslaan":"Opslaan";
   const uit=new Set(g?g.uit||[]:[]),keys=[...new Set(stratenIn(nieuwRing).map(sleutel))].sort((a,b)=>(a||"~").localeCompare(b||"~"));
   $("areaChecks").innerHTML=`<label><input type="checkbox" id="chkVlak" ${!g||g.vlak!==false?"checked":""}><span>Gebied tonen<small>Het vlak met de rand</small></span></label>`+
     (!straten?`<p class="hint" style="margin:0">Straten konden niet geladen worden. Het gebied wordt wel bewaard.</p>`
@@ -766,23 +803,159 @@ $("areaForm").addEventListener("submit",ev=>{
   ev.preventDefault();
   const g=editG?gebieden.find(x=>x.id===editG):null,vlak=$("chkVlak").checked;
   if(straten&&!vlak&&!vinkStraten().some(c=>c.checked)){toast("Vink het gebied of minstens één straat aan");return}
-  const data={kleur:$("areaForm").querySelector('input[name="kleur"]:checked').value,notitie:$("areaNote").value.trim(),door:$("areaDoor").value,vlak,
-    uit:straten?vinkStraten().filter(c=>!c.checked).map(c=>c.dataset.k):(g&&g.uit)||[]};
-  if(data.door)ls.set(LSD,data.door);
-  if(g){Object.assign(g,data,{gewijzigd:new Date().toISOString()});toast(`Gebied G${g.nr} bijgewerkt`)}
-  else{const nr=gebieden.reduce((m,x)=>Math.max(m,x.nr),0)+1;gebieden.push({id:"g"+Date.now().toString(36),nr,punten:nieuwRing,tijd:new Date().toISOString(),...data});toast(`Gebied G${nr} opgeslagen`)}
-  verborgenG=null;saveAreas();closeSheets();
+  if(!magSchrijven())return;
+  const uit=straten?vinkStraten().filter(c=>!c.checked).map(c=>c.dataset.k):(g&&g.uit)||[];
+  const data={kleur:$("areaForm").querySelector('input[name="kleur"]:checked').value,notitie:$("areaNote").value.trim(),vlak,uit,
+    namen:namen(stratenIn(nieuwRing).filter(f=>!uit.includes(sleutel(f))))};
+  if(g){wijzig("gebieden",g.id,{...data,gewijzigd:new Date().toISOString(),gewijzigdDoor:ik.naam});toast(`Gebied G${g.nr} bijgewerkt`)}
+  else{
+    const nr=gebieden.reduce((m,x)=>Math.max(m,x.nr||0),0)+1;
+    schrijf("gebieden",{nr,ring:nieuwRing.flat(),tijd:new Date().toISOString(),...data,door:ik.naam,uid:ik.uid});
+    toast(`Gebied G${nr} opgeslagen`);
+  }
+  verborgenG=null;closeSheets();
 });
 $("areaDel").addEventListener("click",()=>$("areaPop").hidden=!$("areaPop").hidden);
 $("areaDelNo").addEventListener("click",()=>$("areaPop").hidden=true);
 $("areaDelYes").addEventListener("click",()=>{
   const g=gebieden.find(x=>x.id===editG);
-  if(g&&!$("areaPopChk").hidden&&!$("areaPopStraten").checked){g.vlak=false;g.gewijzigd=new Date().toISOString();toast(`Vlak van G${g.nr} weggehaald, de straten blijven`)}
-  else{gebieden=gebieden.filter(x=>x.id!==editG);toast("Gebied verwijderd")}
-  verborgenG=null;saveAreas();closeSheets();
+  if(g&&!$("areaPopChk").hidden&&!$("areaPopStraten").checked){wijzig("gebieden",g.id,{vlak:false,gewijzigd:new Date().toISOString(),gewijzigdDoor:ik?ik.naam:""});toast(`Vlak van G${g.nr} weggehaald, de straten blijven`)}
+  else if(g){wis("gebieden",g.id);toast("Gebied verwijderd")}
+  verborgenG=null;closeSheets();
 });
 
-drawPoints();drawAreas();laadStraten();
+/* ---------- gedeelde opslag: Firebase (inloggen met Google, Firestore) ---------- */
+// Deze gegevens zijn openbaar (ze staan in elke Firebase-website); de beveiliging zit in de Firestore-regels.
+const FB={apiKey:"AIzaSyAnt6rTvFzmPMGipVv2MJTa2HTSsNymG0I",authDomain:"veldkaart-magenta.firebaseapp.com",projectId:"veldkaart-magenta",
+  storageBucket:"veldkaart-magenta.firebasestorage.app",messagingSenderId:"623293720788",appId:"1:623293720788:web:a503e8e87b3161bea1b341"};
+// Wie beheerder is staat alleen in de Firestore-regels (niet in deze openbare code):
+// alleen de beheerder mag de lijst "leden" lezen, dus lukt dat, dan ben je beheerder.
+const NAMEN=Object.keys(MENSEN);
+const FBV="10.14.1",FBU=m=>`https://www.gstatic.com/firebasejs/${FBV}/firebase-${m}.js`;
+let fb=null,ik=null,bezet={},leden={},naamGevraagd=false,beheerderJa=false;
+const isBeheerder=()=>!!(ik&&beheerderJa);
+const magBeheren=x=>!!(ik&&ik.naam&&(x.uid===ik.uid||isBeheerder()));
+function magSchrijven(){
+  if(!fb){toast("De gedeelde opslag laadt nog. Probeer het zo opnieuw.");return false}
+  if(!ik){toast("Log eerst in via het menu (☰) om iets toe te voegen.");openSheet("sheetMenu");return false}
+  if(!ik.naam){openNaam();return false}
+  return true;
+}
+const fout=e=>{console.error(e);toast(e&&e.code==="permission-denied"?"Dat mag niet: je kunt alleen je eigen punten en gebieden wijzigen.":"Opslaan lukte niet ("+((e&&e.code)||e)+").")};
+// Schrijven zonder te wachten: Firestore toont het meteen en stuurt het door zodra er internet is
+function schrijf(pad,data){const {F,db}=fb,ref=F.doc(F.collection(db,pad));F.setDoc(ref,data).catch(fout);return ref.id}
+function wijzig(pad,id,data){fb.F.updateDoc(fb.F.doc(fb.db,pad,id),data).catch(fout)}
+function wis(pad,id){fb.F.deleteDoc(fb.F.doc(fb.db,pad,id)).catch(fout)}
+const naarRing=a=>{const r=[];for(let i=0;i+1<(a||[]).length;i+=2)r.push([a[i],a[i+1]]);return r};
+
+function toonAccount(){
+  const el=$("acct");
+  if(!fb){el.innerHTML=`<p class="hint" style="margin:0">Gedeelde opslag kon niet laden. Controleer je internet en herlaad de pagina.</p>`;return}
+  if(!ik){el.innerHTML=`<b>Niet ingelogd</b><span class="hint">Je kunt meekijken. Log in om punten en gebieden toe te voegen.</span><div class="row"><button class="btn primary" type="button" id="btnLogin" style="flex:1">Inloggen met Google</button></div><p class="hint">Open de link in Chrome of Safari, niet in WhatsApp of Instagram: daar werkt inloggen met Google niet.</p>`;
+    $("btnLogin").addEventListener("click",login)}
+  else if(!ik.naam){el.innerHTML=`<b>Ingelogd</b><span class="hint">${esc(ik.email||"")}</span><div class="row"><button class="btn primary" type="button" id="btnKies" style="flex:1">Kies wie je bent</button><button class="btn" type="button" id="btnUit">Uitloggen</button></div>`;
+    $("btnKies").addEventListener("click",openNaam);$("btnUit").addEventListener("click",uitloggen)}
+  else{el.innerHTML=`<b>Ingelogd als ${esc(ik.naam)}${isBeheerder()?" · beheerder":""}</b><span class="hint">${esc(ik.email||"")}</span><div class="row"><button class="btn" type="button" id="btnUit">Uitloggen</button></div>`;
+    $("btnUit").addEventListener("click",uitloggen)}
+  $("menuBeheer").hidden=!isBeheerder();
+  toonLokaal();
+}
+async function login(){
+  const {A,auth}=fb,p=new A.GoogleAuthProvider();p.setCustomParameters({prompt:"select_account"});
+  try{await A.signInWithPopup(auth,p)}
+  catch(e){
+    if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment"){A.signInWithRedirect(auth,p);return}
+    if(e.code!=="auth/popup-closed-by-user"&&e.code!=="auth/cancelled-popup-request")toast("Inloggen lukte niet ("+e.code+").");
+  }
+}
+function uitloggen(){fb.A.signOut(fb.auth);closeSheets();toast("Uitgelogd")}
+
+// Naam kiezen: een gekozen naam is vergrendeld (namen/{naam} + leden/{uid}, samen in één batch)
+function openNaam(){
+  if(!ik)return;naamGevraagd=true;
+  $("naamLijst").innerHTML=NAMEN.map(n=>{const van=bezet[n];const mij=van===ik.uid;
+    return `<label class="${van&&!mij?"naam-bezet":""}"><input type="radio" name="kiesnaam" value="${esc(n)}" ${van&&!mij?"disabled":""} ${mij?"checked":""}><span>${esc(n)}<small>${mij?"Jij":van?"Bezet":"Vrij"}</small></span></label>`}).join("");
+  $("naamLijst").querySelectorAll("input").forEach(r=>r.addEventListener("change",()=>claim(r.value)));
+  openSheet("sheetNaam");
+}
+async function claim(naam){
+  const {F,db}=fb,b=F.writeBatch(db),nu=new Date().toISOString();
+  b.set(F.doc(db,"namen",naam),{uid:ik.uid,sinds:nu});
+  b.set(F.doc(db,"leden",ik.uid),{naam,email:ik.email||"",sinds:nu});
+  try{await b.commit();closeSheets();toast(`Welkom, ${naam}`)}
+  catch(e){toast(e.code==="permission-denied"?`${naam} is al door iemand anders gekozen.`:"Lukte niet ("+e.code+")");openNaam()}
+}
+// Beheer: namen vrijgeven
+function toonBeheer(){
+  const el=$("beheerLijst");
+  el.innerHTML=NAMEN.map(n=>{const uid=bezet[n],l=uid&&leden[uid];
+    return `<div class="pt"><div class="n" style="--c:${MENSEN[n]}"><b>${esc(n[0])}</b></div><div style="min-width:0"><b>${esc(n)}</b><div class="meta">${uid?esc((l&&l.email)||"Bezet"):"Vrij"}</div>
+      ${uid?`<div class="row delrow" style="margin-top:6px"><button class="btn danger" type="button" data-vrij="${esc(n)}">Vrijgeven</button>
+      <div class="pop" hidden><b>Zeker?</b><div class="row"><button class="btn danger" type="button" data-ja="${esc(n)}">Ja</button><button class="btn" type="button" data-nee>Nee</button></div></div></div>`:""}</div></div>`}).join("");
+  el.querySelectorAll("[data-vrij]").forEach(b=>b.addEventListener("click",()=>{const p=b.parentElement.querySelector(".pop");p.hidden=!p.hidden}));
+  el.querySelectorAll("[data-nee]").forEach(b=>b.addEventListener("click",()=>b.closest(".pop").hidden=true));
+  el.querySelectorAll("[data-ja]").forEach(b=>b.addEventListener("click",async()=>{
+    const n=b.dataset.ja,uid=bezet[n],{F,db}=fb,bt=F.writeBatch(db);
+    bt.delete(F.doc(db,"namen",n));if(uid)bt.delete(F.doc(db,"leden",uid));
+    try{await bt.commit();toast(`${n} is vrijgegeven`)}catch(e){fout(e)}
+  }));
+}
+$("menuBeheer").addEventListener("click",()=>{toonBeheer();openSheet("sheetBeheer")});
+
+// Punten en gebieden die nog alleen op dit toestel staan (van vóór de gedeelde opslag)
+function toonLokaal(){
+  const lp=ls.get(LS,[]),lg=ls.get(LSG,[]),n=lp.length+lg.length;
+  const html=!n?"":`<div class="lokaal"><b>Nog alleen op dit toestel:</b> ${lp.length} punt${lp.length===1?"":"en"} en ${lg.length} gebied${lg.length===1?"":"en"}.
+    ${ik&&ik.naam?`<div class="row"><button class="btn primary" type="button" data-upload style="flex:1">Uploaden naar de groep</button></div><p class="hint">Ze komen op naam van ${esc(ik.naam)}. Stond er een andere naam bij, dan komt die in de notitie.</p>`:`<p class="hint">Log in en kies je naam om ze met de groep te delen.</p>`}</div>`;
+  ["lokaalMenu","lokaalPunten"].forEach(id=>{$(id).innerHTML=html;const b=$(id).querySelector("[data-upload]");if(b)b.addEventListener("click",upload)});
+}
+async function upload(){
+  if(!magSchrijven())return;
+  const {F,db}=fb,lp=ls.get(LS,[]),lg=ls.get(LSG,[]),b=F.writeBatch(db),nu=new Date().toISOString();
+  let nr=points.reduce((m,p)=>Math.max(m,p.nr||0),0),gnr=gebieden.reduce((m,g)=>Math.max(m,g.nr||0),0);
+  const notitie=(t,door)=>[t||"",door&&door!==ik.naam?`(opgenomen door ${door})`:""].filter(Boolean).join(" ");
+  lp.forEach(p=>b.set(F.doc(F.collection(db,"punten")),{nr:++nr,lat:p.lat,lng:p.lng,nauwkeurigheid:p.nauwkeurigheid??null,tijd:p.tijd||nu,soort:p.soort||"Overig",
+    ernst:p.ernst||"",tags:p.tags||[],notitie:notitie(p.notitie,p.door),door:ik.naam,uid:ik.uid}));
+  lg.filter(g=>Array.isArray(g.punten)&&g.punten.length>=3&&KLEUR[g.kleur]).forEach(g=>b.set(F.doc(F.collection(db,"gebieden")),{nr:++gnr,ring:g.punten.flat(),tijd:g.tijd||nu,
+    kleur:g.kleur,notitie:notitie(g.notitie,g.door),vlak:g.vlak!==false,uit:g.uit||[],namen:g.namen||[],door:ik.naam,uid:ik.uid}));
+  try{
+    await b.commit();
+    ls.set(LS+"-geupload",lp);ls.set(LSG+"-geupload",lg);try{localStorage.removeItem(LS);localStorage.removeItem(LSG)}catch(e){}
+    toast(`${lp.length} punten en ${lg.length} gebieden gedeeld met de groep`);toonLokaal();
+  }catch(e){fout(e)}
+}
+
+async function startFirebase(){
+  try{
+    const [appM,A,F]=await Promise.all([import(FBU("app")),import(FBU("auth")),import(FBU("firestore"))]);
+    const app=appM.initializeApp(FB),auth=A.getAuth(app);
+    let db;try{db=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})})}catch(e){db=F.getFirestore(app)}
+    fb={A,F,auth,db};
+  }catch(e){console.error(e);fb=null;toonAccount();toast("Gedeelde opslag kon niet laden. Controleer je internet.");return}
+  const {A,F,auth,db}=fb;
+  let gemeld=false;const leesFout=e=>{console.error(e);if(!gemeld){gemeld=true;toast(e.code==="permission-denied"?"De database is nog niet open (regels ontbreken).":"Gegevens laden lukte niet ("+e.code+").")}};
+  F.onSnapshot(F.collection(db,"punten"),s=>{points=s.docs.map(d=>({...d.data(),id:d.id})).filter(p=>typeof p.lat==="number"&&typeof p.lng==="number");drawPoints();if(!$("sheetPoints").hidden)renderList()},leesFout);
+  F.onSnapshot(F.collection(db,"gebieden"),s=>{gebieden=s.docs.map(d=>{const x=d.data();return {...x,id:d.id,punten:naarRing(x.ring)}}).filter(g=>KLEUR[g.kleur]&&g.punten.length>=3);drawAreas();if(!$("sheetAreas").hidden)renderAreas()},leesFout);
+  F.onSnapshot(F.collection(db,"namen"),s=>{bezet={};s.docs.forEach(d=>bezet[d.id]=d.data().uid);if(!$("sheetNaam").hidden)openNaam();if(!$("sheetBeheer").hidden)toonBeheer()},leesFout);
+  let ledenUit=null,alleLedenUit=null;
+  A.onAuthStateChanged(auth,u=>{
+    if(ledenUit){ledenUit();ledenUit=null}if(alleLedenUit){alleLedenUit();alleLedenUit=null}
+    naamGevraagd=false;beheerderJa=false;
+    if(!u){ik=null;toonAccount();return}
+    ik={uid:u.uid,email:u.email||"",naam:null};toonAccount();
+    ledenUit=F.onSnapshot(F.doc(db,"leden",u.uid),d=>{
+      ik.naam=d.exists()?d.data().naam:null;toonAccount();drawPoints();
+      if(!ik.naam&&!naamGevraagd)openNaam();
+    },e=>console.error(e));
+    alleLedenUit=F.onSnapshot(F.collection(db,"leden"),s=>{
+      beheerderJa=true;leden={};s.docs.forEach(d=>leden[d.id]=d.data());toonAccount();drawPoints();if(!$("sheetBeheer").hidden)toonBeheer();
+    },()=>{beheerderJa=false;toonAccount()}); // geweigerd = geen beheerder, dat is normaal
+  });
+  A.getRedirectResult(auth).catch(e=>{if(e&&e.code)toast("Inloggen lukte niet ("+e.code+").")});
+  toonAccount();
+}
+
+drawPoints();drawAreas();laadStraten();toonLokaal();startFirebase();
 })();
 </script>
 </body>
