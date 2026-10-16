@@ -879,7 +879,7 @@ function magSchrijven(){
   if(!ik.naam){openNaam();return false}
   return true;
 }
-const fout=e=>{console.error(e);toast(e&&e.code==="permission-denied"?"Dat mag niet: je kunt alleen je eigen punten en gebieden wijzigen.":"Opslaan lukte niet ("+((e&&e.code)||e)+").")};
+const fout=e=>{console.error(e);toast(e&&e.code==="permission-denied"?"De server weigerde dit. Stuur een seintje, dan zoeken we het uit.":"Opslaan lukte niet ("+((e&&e.code)||e)+").")};
 // Schrijven zonder te wachten: Firestore toont het meteen en stuurt het door zodra er internet is.
 // Elke wijziging gaat in dezelfde batch als een regel in "activiteit", met de toestand ervoor en erna.
 function huidig(pad,id){const x=(pad==="punten"?points:gebieden).find(y=>y.id===id);if(!x)return null;const c={...x};delete c.id;delete c.punten;return c}
@@ -887,9 +887,19 @@ function logRegel(b,actie,pad,id,voor,na){
   const {F,db}=fb;
   b.set(F.doc(F.collection(db,"activiteit")),{tijd:new Date().toISOString(),door:ik.naam,uid:ik.uid,actie,pad,docId:id,nr:(na||voor||{}).nr??null,voor:voor??null,na:na??null});
 }
-function schrijf(pad,data){const {F,db}=fb,b=F.writeBatch(db),ref=F.doc(F.collection(db,pad));b.set(ref,data);logRegel(b,"nieuw",pad,ref.id,null,data);b.commit().catch(fout);return ref.id}
-function wijzig(pad,id,data){const {F,db}=fb,b=F.writeBatch(db),voor=huidig(pad,id);b.update(F.doc(db,pad,id),data);logRegel(b,"gewijzigd",pad,id,voor,voor?{...voor,...data}:data);b.commit().catch(fout)}
-function wis(pad,id){const {F,db}=fb,b=F.writeBatch(db);b.delete(F.doc(db,pad,id));logRegel(b,"verwijderd",pad,id,huidig(pad,id),null);b.commit().catch(fout)}
+// Het punt of gebied zelf gaat apart naar de server; het logboek komt pas daarna en mag mislukken.
+// (Eerder zaten ze in één batch: weigerde de server het logboek, dan verdween ook het punt.)
+function logApart(actie,pad,id,voor,na){try{const {F,db}=fb,b=F.writeBatch(db);logRegel(b,actie,pad,id,voor,na);b.commit().catch(e=>console.warn("logboek niet bewaard",e))}catch(e){console.warn(e)}}
+function schrijf(pad,data){const {F,db}=fb,ref=F.doc(F.collection(db,pad));F.setDoc(ref,data).then(()=>logApart("nieuw",pad,ref.id,null,data)).catch(fout);return ref.id}
+function wijzig(pad,id,data){
+  const {F,db}=fb,voor=huidig(pad,id),ref=F.doc(db,pad,id),log=d=>()=>logApart("gewijzigd",pad,id,voor,voor?{...voor,...d}:d);
+  F.updateDoc(ref,data).then(log(data)).catch(e=>{
+    // Weigert de server de extra velden (gewijzigd, gewijzigdDoor), probeer dan alleen de inhoud
+    const kern={...data};delete kern.gewijzigd;delete kern.gewijzigdDoor;
+    if(e&&e.code==="permission-denied"&&Object.keys(kern).length<Object.keys(data).length)F.updateDoc(ref,kern).then(log(kern)).catch(fout);else fout(e);
+  });
+}
+function wis(pad,id){const {F,db}=fb,voor=huidig(pad,id);F.deleteDoc(F.doc(db,pad,id)).then(()=>logApart("verwijderd",pad,id,voor,null)).catch(fout)}
 const naarRing=a=>{const r=[];for(let i=0;i+1<(a||[]).length;i+=2)r.push([a[i],a[i+1]]);return r};
 
 function toonAccount(){
@@ -1007,7 +1017,7 @@ function toonLokaal(){
 async function upload(){
   if(!magSchrijven())return;
   const {F,db}=fb,lp=ls.get(LS,[]),lg=ls.get(LSG,[]),b=F.writeBatch(db),nu=new Date().toISOString();
-  const zetMetLog=(pad,data)=>{const ref=F.doc(F.collection(db,pad));b.set(ref,data);logRegel(b,"nieuw",pad,ref.id,null,data)};
+  const zetMetLog=(pad,data)=>{const ref=F.doc(F.collection(db,pad));b.set(ref,data)};
   let nr=points.reduce((m,p)=>Math.max(m,p.nr||0),0),gnr=gebieden.reduce((m,g)=>Math.max(m,g.nr||0),0);
   const notitie=(t,door)=>[t||"",door&&door!==ik.naam?`(opgenomen door ${door})`:""].filter(Boolean).join(" ");
   lp.forEach(p=>zetMetLog("punten",{nr:++nr,lat:p.lat,lng:p.lng,nauwkeurigheid:p.nauwkeurigheid??null,tijd:p.tijd||nu,soort:soortNaam(p.soort),
@@ -1065,7 +1075,7 @@ async function wegdekToevoegen(btn){
     const ref=F.doc(F.collection(db,"punten"));
     const data={nr:++nr,lat,lng,nauwkeurigheid:null,tijd:nu,soort:"Wegdek",ernst:"",tags:[tag],
       notitie:`${WD_TAG} ${naam}, midden van de straat. ${tag==="asfalt"?"Asfalt":"Zandweg"} ${gok?"is een gok, de luchtfoto is hier niet duidelijk":"gezien op de luchtfoto"}, ter plekke nog controleren.`,door:ik.naam,uid:ik.uid};
-    b.set(ref,data);logRegel(b,"nieuw","punten",ref.id,null,data);
+    b.set(ref,data);
   });
   try{await b.commit();toast(`${WEGDEK.length} wegdek-punten toegevoegd`)}catch(e){btn.disabled=false;fout(e)}
 }
