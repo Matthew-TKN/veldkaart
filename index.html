@@ -605,10 +605,11 @@ const ptLayer=L.layerGroup().addTo(map);
 $("ovPoints").addEventListener("change",e=>e.target.checked?ptLayer.addTo(map):map.removeLayer(ptLayer));
 // Kleur per persoon: Matthew en Natanaël groen, Natasha en Sjanaz roze
 const MENSEN={"Matthew":"#2e8b3e","Natanaël":"#2e8b3e","Natasha":"#d63384","Sjanaz":"#d63384"};
-// Rood zodra een afwatering-/rioleringsvinkje aanstaat; zonder zo'n vinkje de kleur van de persoon (ook bij soort Afwatering)
+// Rood bij elk probleem: een negatief vinkje of een gekozen ernst. Alleen een soort, of neutrale/positieve
+// vinkjes (zandweg, asfalt, betegeld, grind, goot lijkt goed …), houden de kleur van de persoon.
 const AFWATERING_ROOD="#e3120b";
-const AFWATERING_TAGS=new Set(["goot begroeid","afval in goot","geen goot","duiker dicht","beschadigde/verstopte kokers","water staat stil","water op weg"]);
-const isAfwatering=p=>(p.tags||[]).some(t=>AFWATERING_TAGS.has(t));
+const AFWATERING_TAGS=new Set(["goot begroeid","afval in goot","afval langs straat","geen goot","duiker dicht","beschadigde/verstopte kokers","water staat stil","water op weg","kuilen","verzakking"]);
+const isAfwatering=p=>!!p.ernst||(p.tags||[]).some(t=>AFWATERING_TAGS.has(t));
 const kleurVan=p=>isAfwatering(p)?AFWATERING_ROOD:MENSEN[p.door]||"#6b7a74";
 const badge=p=>`<b>${p.nr}</b>${p.door?`<i>${esc(p.door[0].toUpperCase())}</i>`:""}${p.ernst?`<s class="d${esc(p.ernst)}"></s>`:""}`;
 // Symbool per soort (lijnen in de stijl van Tabler Icons). "Parklocatie" is de oude naam van Parkeerplek.
