@@ -123,11 +123,11 @@ textarea{min-height:70px}
 .pt .n i{font-style:normal;font-size:.85rem;opacity:.95}
 .pt .meta{font-size:.82rem;color:var(--muted)}
 /* puntmarker: nummer + eerste letter van wie het opnam, kleur per persoon, stip voor de ernst */
-.mk{position:relative;display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 7px;border-radius:11px;border:2px solid #fff;color:#fff;font:700 .76rem var(--f-ui);background:var(--c,#0f5f74);box-shadow:0 1px 4px rgba(0,0,0,.45);white-space:nowrap}
+.mk{position:relative;display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 7px;border-radius:11px;border:2px solid #fff;color:#fff;font:700 .76rem var(--f-ui);background:var(--c,#0f5f74);white-space:nowrap}
 /* speld: label erboven, gekantelde druppelvorm met symbool; de punt valt onderaan in het midden (anker 24,58) */
 .spin{width:48px;height:62px;display:flex;flex-direction:column;align-items:center;cursor:pointer}
-.spin .steel{width:3px;height:6px;background:#fff;box-shadow:0 0 2px rgba(0,0,0,.4)}
-.spin .kop{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45);display:grid;place-items:center;color:#fff}
+.spin .steel{width:3px;height:6px;background:#fff}
+.spin .kop{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--c);border:2px solid #fff;display:grid;place-items:center;color:#fff}
 .spin .kop svg{width:15px;height:15px;transform:rotate(45deg)}
 .mk i{font-style:normal;font-size:.74rem;opacity:.95}
 .mk s,.pt .n s{position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;border:2px solid #fff}
@@ -430,6 +430,7 @@ const STREETS_LAYER=MIGLIS+"Strpln/FeatureServer/0";
 /* ---------- kaart en achtergronden ---------- */
 const map=L.map("map",{zoomControl:true,attributionControl:true,tap:true}).setView([5.84,-55.2],13);
 const esriAttr="Luchtfoto en kaarten © Esri, Maxar, Earthstar Geographics";
+L.TileLayer.mergeOptions({updateWhenZooming:false});
 const imagery=()=>L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:20,maxNativeZoom:19,attribution:esriAttr});
 const bases={
   luchtfoto:{name:"Luchtfoto",desc:"Echte luchtfoto",layer:imagery()},
@@ -624,13 +625,15 @@ const symbool=s=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 // - uitgezoomd (onder zoom 17) een lichte stip per punt op één canvas;
 // - ingezoomd de volledige speld, maar alleen voor punten in beeld;
 // - bij een wijziging alleen de punten die echt veranderd zijn opnieuw tekenen.
-const SPELD_ZOOM=17;
-const stipRenderer=L.canvas({padding:0.3});
+const SPELD_ZOOM=17,MAX_SPELDEN=20; // meer punten in beeld → lichte stippen, ook ingezoomd
+const stipRenderer=L.canvas({padding:0.3,tolerance:10}); // tolerance: makkelijker raak tikken met een vinger
 const stippen=new Map(),spelden=new Map(); // id → {m, k}
 const ptSleutel=p=>[p.lat,p.lng,p.soort,p.ernst,p.door,p.nr,(p.tags||[]).join(",")].join("|");
 function klikPunt(id){return ev=>{L.DomEvent.stopPropagation(ev);openForm(id)}}
 function drawPoints(){
-  const ids=new Set(points.map(p=>p.id)),speldModus=map.getZoom()>=SPELD_ZOOM,zicht=map.getBounds().pad(0.3);
+  const ids=new Set(points.map(p=>p.id)),zicht=map.getBounds().pad(0.3),inBeeld=map.getBounds();
+  let speldModus=map.getZoom()>=SPELD_ZOOM;
+  if(speldModus){let n=0;for(const p of points)if(inBeeld.contains([p.lat,p.lng])&&++n>MAX_SPELDEN){speldModus=false;break}}
   // weg wat niet meer bestaat of niet meer in deze modus hoort
   stippen.forEach((v,id)=>{if(speldModus||!ids.has(id)){ptLayer.removeLayer(v.m);stippen.delete(id)}});
   spelden.forEach((v,id)=>{if(!speldModus||!ids.has(id)){ptLayer.removeLayer(v.m);spelden.delete(id)}});
@@ -651,7 +654,7 @@ function drawPoints(){
   });
   $("ptCount").textContent=`Lijst (${points.length})`;
 }
-map.on("zoomend moveend",()=>drawPoints());
+map.on("moveend",()=>drawPoints());
 function openForm(id){
   const p=id?points.find(x=>x.id===id):null;
   if(!p&&!magSchrijven())return; // nieuw punt: eerst inloggen en een naam hebben
