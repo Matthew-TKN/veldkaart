@@ -137,6 +137,19 @@ textarea{min-height:70px}
 .drawbar{position:fixed;z-index:1050;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 64px);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:0 2px 10px rgba(0,0,0,.25);font-weight:600}
 .drawbar .row{margin-top:8px}
 .drawbar .btn{flex:1}
+/* Fotomodus: alleen de kaart, met bovenaan een balk om per procent te zoomen; tik op de kaart verbergt de balk */
+body.foto .topbar,body.foto .rail,body.foto .gpsbar,body.foto .drawbar,body.foto .toast,body.foto .sheet,body.foto .drawer,body.foto .shade,body.foto .leaflet-control-zoom{display:none!important}
+body.foto .leaflet-bottom{bottom:env(safe-area-inset-bottom,0px)}
+body.foto .leaflet-top{top:env(safe-area-inset-top,0px)}
+.fotobar{position:fixed;z-index:1050;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 8px);max-width:520px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px 10px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.fzoom{display:flex;align-items:center;gap:8px}
+.fzoom .btn{width:44px;padding:0;font-size:1.4rem;flex:none;touch-action:manipulation}
+.fzoom input[type=range]{flex:1;min-width:0;height:32px;accent-color:var(--accent)}
+.fpct{flex:none;display:flex;align-items:center;gap:2px;font-weight:700}
+.fpct input{width:62px;min-height:40px;border:1px solid var(--line);border-radius:8px;background:var(--sunk);color:var(--ink);font:700 1rem var(--f-ui);text-align:right;padding:0 6px}
+.fotobar .row{margin-top:8px;flex-wrap:nowrap}
+.fotobar .row .btn{flex:1;min-width:0;padding:8px 6px;white-space:nowrap}
+.fotobar .hint{margin:6px 0 0}
 /* versleepbare hoekpunten: groot aanraakvlak, kleine stip */
 .vtx{width:36px;height:36px;display:grid;place-items:center;cursor:grab;touch-action:none}
 .vtx::after{content:"";width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #111;box-shadow:0 1px 3px rgba(0,0,0,.45)}
@@ -171,6 +184,7 @@ textarea{min-height:70px}
 <div class="rail" id="rail">
   <button type="button" class="ic" id="btnLayers" aria-label="Kaartlagen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="m2 13 10 5 10-5"/></svg></button>
   <button type="button" class="ic" id="btnLocate" aria-label="Mijn locatie"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+  <button type="button" class="ic" id="btnFoto" aria-label="Schermafbeelding: alleen de kaart tonen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h1a2 2 0 0 0 2-2 1 1 0 0 1 1-1h6a1 1 0 0 1 1 1 2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/><circle cx="12" cy="13" r="3"/></svg></button>
   <button type="button" class="ic" id="btnHome" aria-label="Terug naar het onderzoeksgebied"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg></button>
 </div>
 
@@ -198,6 +212,7 @@ textarea{min-height:70px}
   <button type="button" class="mi" data-menu="sheetPoints"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>Punten</button>
   <button type="button" class="mi" id="menuShare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"/></svg>Delen in de groepsapp</button>
   <button type="button" class="mi" id="menuCsv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Download CSV</button>
+  <button type="button" class="mi" id="menuFoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h1a2 2 0 0 0 2-2 1 1 0 0 1 1-1h6a1 1 0 0 1 1 1 2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2"/><circle cx="12" cy="13" r="3"/></svg>Schermafbeelding (alleen kaart)</button>
   <div class="lbl">Weergave</div>
   <div class="chips">
     <input type="radio" name="thema" id="t0" value="auto" checked><label for="t0">Automatisch</label>
@@ -297,6 +312,22 @@ textarea{min-height:70px}
     <button class="btn primary" type="button" id="drawDone">Klaar</button>
     <button class="btn" type="button" id="drawStop">Stop</button>
   </div>
+</div>
+
+<!-- FOTOMODUS -->
+<div class="fotobar" id="fotobar" hidden>
+  <div class="fzoom">
+    <button class="btn" type="button" id="fotoMin" aria-label="1% uitzoomen">−</button>
+    <input type="range" id="fotoRange" min="25" max="400" step="1" value="100" aria-label="Zoom in procent">
+    <button class="btn" type="button" id="fotoPlus" aria-label="1% inzoomen">+</button>
+    <label class="fpct"><input type="number" id="fotoPct" inputmode="numeric" min="1" step="1" value="100" aria-label="Zoom in procent">%</label>
+  </div>
+  <div class="row">
+    <button class="btn" type="button" id="fotoSchaal" aria-pressed="true">Schaalbalk</button>
+    <button class="btn" type="button" id="fotoVerberg">Verberg balk</button>
+    <button class="btn primary" type="button" id="fotoKlaar">Klaar</button>
+  </div>
+  <p class="hint">Verschuif en zoom de kaart zoals je wilt; tik daarna op de kaart om deze balk te verbergen. Nog eens tikken brengt hem terug. 100% = zoals de kaart stond toen je begon.</p>
 </div>
 
 <!-- GEBIEDEN -->
@@ -894,6 +925,65 @@ $("areaDelYes").addEventListener("click",()=>{
   else if(g){wis("gebieden",g.id);toast("Gebied verwijderd")}
   verborgenG=null;closeSheets();
 });
+
+/* ---------- fotomodus: alle knoppen weg, traploos zoomen per procent ---------- */
+const LSF="veldkaart-magenta-foto-schaal";
+let foto=null; // {z0} zolang de fotomodus aan staat; 100% = de zoom bij het starten
+const schaal=L.control.scale({imperial:false,position:"bottomleft",maxWidth:160});
+let schaalAan=ls.get(LSF,true);
+const pctVan=z=>Math.round(100*Math.pow(2,z-foto.z0));
+const zoomVan=pct=>foto.z0+Math.log2(Math.max(pct,1)/100);
+function toonPct(){
+  if(!foto)return;const p=pctVan(map.getZoom()),r=$("fotoRange");
+  if(document.activeElement!==$("fotoPct"))$("fotoPct").value=p;
+  r.min=Math.max(25,Math.ceil(100*Math.pow(2,map.getMinZoom()-foto.z0)));
+  r.max=Math.min(400,Math.floor(100*Math.pow(2,map.getMaxZoom()-foto.z0)));
+  r.value=p;
+}
+const zetPct=pct=>{if(foto&&isFinite(pct))map.setZoom(zoomVan(pct),{animate:false})};
+function zetSchaal(){
+  $("fotoSchaal").setAttribute("aria-pressed",schaalAan);
+  $("fotoSchaal").textContent=schaalAan?"Schaalbalk: aan":"Schaalbalk: uit";
+  if(foto&&schaalAan)schaal.addTo(map);else schaal.remove();
+}
+function startFoto(){
+  if(tekenen){toast("Rond eerst het tekenen af");return}
+  closeSheets();map.closePopup();
+  foto={z0:map.getZoom()};
+  map.options.zoomSnap=0;map.options.zoomDelta=.25;map.options.wheelPxPerZoomLevel=240;
+  document.body.classList.add("foto");$("fotobar").hidden=false;
+  zetSchaal();toonPct();
+}
+function stopFoto(){
+  if(!foto)return;foto=null;
+  map.options.zoomSnap=1;map.options.zoomDelta=1;map.options.wheelPxPerZoomLevel=60;
+  document.body.classList.remove("foto");$("fotobar").hidden=true;schaal.remove();
+}
+$("btnFoto").addEventListener("click",startFoto);
+$("menuFoto").addEventListener("click",startFoto);
+$("fotoKlaar").addEventListener("click",stopFoto);
+$("fotoVerberg").addEventListener("click",()=>$("fotobar").hidden=true);
+$("fotoSchaal").addEventListener("click",()=>{schaalAan=!schaalAan;ls.set(LSF,schaalAan);zetSchaal()});
+$("fotoRange").addEventListener("input",e=>zetPct(+e.target.value));
+$("fotoPct").addEventListener("change",e=>zetPct(+e.target.value));
+$("fotoPct").addEventListener("keydown",e=>{if(e.key==="Enter")e.target.blur()});
+$("fotoPct").addEventListener("blur",toonPct);
+// − en +: elke tik 1%, ingedrukt houden blijft doorgaan
+[["fotoMin",-1],["fotoPlus",1]].forEach(([id,d])=>{
+  let t=null;const stap=()=>zetPct(pctVan(map.getZoom())+d),stop=()=>{clearTimeout(t);clearInterval(t);t=null};
+  $(id).addEventListener("pointerdown",e=>{e.preventDefault();stap();t=setTimeout(()=>t=setInterval(stap,60),400)});
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=>$(id).addEventListener(ev,stop));
+  $(id).addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();stap()}});
+});
+map.on("zoom zoomend",toonPct);
+// Tik op de kaart (niet slepen): balk tonen of verbergen. Punten, gebieden en popups reageren dan niet.
+window.addEventListener("click",e=>{
+  if(!foto||!map.getContainer().contains(e.target))return;
+  e.stopPropagation();e.preventDefault();
+  if(map.dragging.moved())return;
+  $("fotobar").hidden=!$("fotobar").hidden;if(!$("fotobar").hidden)toonPct();
+},true);
+document.addEventListener("keydown",e=>{if(foto&&e.key==="Escape")stopFoto()});
 
 /* ---------- gedeelde opslag: Firebase (inloggen met Google, Firestore) ---------- */
 // Deze gegevens zijn openbaar (ze staan in elke Firebase-website); de beveiliging zit in de Firestore-regels.

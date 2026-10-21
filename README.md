@@ -12,7 +12,11 @@ Magentakanaalweg, Nieuw Weergevondenweg, Santodorpweg / Rambali Mathoeraweg en F
 2. Tik **Punt hier** om op je GPS-plek een punt vast te leggen, of tik zelf op de kaart.
 3. Kies soort, ernst en de vinkjes (goot begroeid, duiker dicht, zandweg, asfalt …) en wie het opnam.
 4. Teken onder **Gebieden** een blok en kleur het groen (gecheckt) of geel (nog te checken).
-5. Deel na de ronde je punten via **Menu → Delen in de groepsapp** of **Download CSV**.
+5. Voor een schermafbeelding: tik het **camera-icoon** rechts (of Menu → Schermafbeelding). Alle knoppen
+   verdwijnen; met de balk bovenaan zoom je per 1% (−/+, schuifregelaar of zelf een getal typen), en
+   knijpen of scrollen zoomt traploos. Tik op de kaart om de balk te verbergen of terug te halen,
+   en **Klaar** (of Esc) zet alles terug.
+6. Deel na de ronde je punten via **Menu → Delen in de groepsapp** of **Download CSV**.
 
 Punten en gebieden worden alleen op je eigen telefoon bewaard. Er is geen gedeelde opslag;
 voeg ze samen via Delen of CSV.
