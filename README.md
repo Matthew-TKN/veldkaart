@@ -25,6 +25,21 @@ voeg ze samen via Delen of CSV.
   kilometers naast; gebruik de kaart in het veld op je telefoon.
 - Licht, donker of automatisch, onder het menu.
 
+## Alle gegevens exporteren
+
+`tools/export.mjs` haalt alle punten en gebieden uit de gedeelde opslag en zet ze in `export/`:
+een Excel-bestand (tabbladen Punten, Gebieden en Overzicht), CSV's, een GeoJSON voor QGIS of
+Google Earth en de ruwe data. Nodig: Node.js 18 of nieuwer.
+
+```
+cd tools
+npm install
+npm run export
+```
+
+`export/` staat in `.gitignore`, zodat namen en notities niet op GitHub komen. Het
+activiteitenlogboek en de ledenlijst zijn alleen voor beheerders en zitten er niet bij.
+
 ## Bijwerken
 
 Alles staat in één bestand, `index.html`, zonder build-stap. Vervang het en push naar `main`;
