@@ -4,7 +4,8 @@
   "type": "module",
   "description": "Haalt alle punten en gebieden uit Firestore en zet ze in export/ (xlsx, csv, geojson, json)",
   "scripts": {
-    "export": "node export.mjs"
+    "export": "node export.mjs",
+    "straten": "node straten-index.mjs"
   },
   "dependencies": {
     "exceljs": "4.4.0"

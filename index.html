@@ -28,7 +28,7 @@
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.4 var(--f-ui);font-variant-numeric:tabular-nums;overflow:hidden;-webkit-tap-highlight-color:transparent}
 #map{position:fixed;inset:0;background:var(--sunk)}
-.topbar{position:fixed;z-index:1000;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top,0px) + 8px) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));display:flex;gap:8px;align-items:center;pointer-events:none}
+.topbar{position:fixed;z-index:1010;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top,0px) + 8px) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));display:flex;gap:8px;align-items:center;pointer-events:none}
 .topbar>*{pointer-events:auto}
 .ic{width:44px;height:44px;flex:none;display:grid;place-items:center;padding:0;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
 .ic svg{width:22px;height:22px}
@@ -38,6 +38,23 @@ body{background:var(--bg);color:var(--ink);font:15px/1.4 var(--f-ui);font-varian
 .search{flex:1;min-width:0;display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.15);overflow:hidden}
 .search input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:inherit;padding:10px 12px;outline:none}
 .search button{border:0;background:transparent;color:var(--accent);font:600 .9rem var(--f-ui);padding:0 12px;cursor:pointer}
+/* Suggesties onder de zoekbalk: straten (eigen index), punten van de groep en plaatsen (Photon / OpenStreetMap) */
+.zoek{flex:1;min-width:0;position:relative}
+.search .wis{color:var(--muted);font-size:1.35rem;font-weight:400;padding:0 6px}
+.spin{flex:none;align-self:center;width:18px;height:18px;margin:0 4px;border:2.5px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:draai .7s linear infinite}
+@keyframes draai{to{transform:rotate(360deg)}}
+.sugg{position:absolute;left:0;right:0;top:calc(100% + 6px);margin:0;padding:4px 0;list-style:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.28);max-height:min(62vh,460px);overflow:auto;overscroll-behavior:contain}
+.sugg li{display:flex;align-items:center;gap:10px;padding:8px 12px;min-height:50px;cursor:pointer}
+.sugg li[aria-selected="true"]{background:var(--sunk)}
+@media (hover:hover){.sugg li:hover{background:var(--sunk)}}
+.sugg li svg{width:20px;height:20px;flex:none;color:var(--muted)}
+.sugg li.str svg{color:var(--accent)}.sugg li.pnt svg{color:var(--road)}
+.sugg .st{display:block;min-width:0;flex:1}
+.sugg .t{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sugg .t b{font-weight:700}
+.sugg .s{display:block;font-size:.82rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sugg .kop{min-height:0;padding:8px 12px 2px;font:700 .7rem var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:default}
+.sugg .leeg{min-height:0;color:var(--muted);cursor:default;font-size:.9rem}
 /* GPS-balk onder: status van de locatie + de drie hoofdknoppen */
 .gpsbar{position:fixed;z-index:1000;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -4px 16px rgba(0,0,0,.18);padding:6px max(12px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 10px) max(12px,env(safe-area-inset-left,0px))}
 .gpsrow{width:100%;min-height:36px;display:flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--ink);font:600 .9rem var(--f-ui);padding:2px 2px 6px;cursor:pointer;text-align:left}
@@ -174,10 +191,15 @@ body.foto .leaflet-top{top:env(safe-area-inset-top,0px)}
 
 <div class="topbar" id="topbar">
   <button type="button" class="ic" id="btnMenu" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-  <form class="search" id="searchForm" role="search">
-    <input type="text" id="searchInput" placeholder="Zoek straat…" aria-label="Zoek een straat">
-    <button type="submit">Zoek</button>
-  </form>
+  <div class="zoek">
+    <form class="search" id="searchForm" role="search">
+      <input type="text" id="searchInput" placeholder="Zoek straat, plaats of punt…" aria-label="Zoek een straat, plaats of punt" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugg">
+      <span class="spin" id="searchSpin" hidden aria-hidden="true"></span>
+      <button type="button" class="wis" id="searchClear" hidden aria-label="Zoekveld leegmaken">×</button>
+      <button type="submit">Zoek</button>
+    </form>
+    <ul class="sugg" id="sugg" role="listbox" aria-label="Suggesties" hidden></ul>
+  </div>
 </div>
 
 <!-- iconen rechts: lagen, mijn locatie, naar gebied -->
@@ -515,22 +537,248 @@ const naarGebied=animate=>map.fitBounds(areaPoly.getBounds(),{paddingTopLeft:[16
 naarGebied(false);namenZoom();
 $("btnHome").addEventListener("click",()=>{map.closePopup();naarGebied(true)});
 $("ovArea").addEventListener("change",e=>e.target.checked?areaGroup.addTo(map):map.removeLayer(areaGroup));
-async function queryStreets(where){
-  const u=STREETS_LAYER+"/query?"+new URLSearchParams({where,outFields:"STREETNAME,RESSORTNAM",returnGeometry:"true",outSR:"4326",f:"geojson"});
-  const r=await fetch(u);if(!r.ok)throw new Error("http "+r.status);return r.json();
+async function queryStreets(where,extra,signal){
+  const u=STREETS_LAYER+"/query?"+new URLSearchParams({where,outFields:"STREETNAME,RESSORTNAM",returnGeometry:"true",outSR:"4326",f:"geojson",...extra});
+  const r=await fetch(u,{signal});if(!r.ok)throw new Error("http "+r.status);return r.json();
 }
 
-/* ---------- zoeken ---------- */
+/* ---------- zoeken: suggesties terwijl je typt ---------- */
+// Straten komen uit straten.json (gemaakt met tools/straten-index.mjs uit MI-GLIS): meteen, ook met tikfouten.
+// Punten van de groep worden lokaal doorzocht. Plaatsen (kanalen, scholen, wijken …) komen van Photon (OpenStreetMap), wat trager is.
 const searchLayer=L.layerGroup().addTo(map);
-$("searchForm").addEventListener("submit",async ev=>{
-  ev.preventDefault();const q=$("searchInput").value.trim().toUpperCase().replace(/'/g,"");if(q.length<3){toast("Typ minstens 3 letters");return}
+const zIn=$("searchInput"),zLijst=$("sugg");
+const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+let stratenIdx=null,indexLaden=null,zoekNr=0,keuzes=[],actief=-1,photonUit=null,photonTimer=0,geomUit=null;
+const bezig={index:false,photon:false,geom:false};
+const toonBezig=()=>{$("searchSpin").hidden=!(bezig.index||bezig.photon||bezig.geom)};
+
+function laadIndex(){
+  if(indexLaden)return indexLaden;
+  bezig.index=true;toonBezig();
+  indexLaden=fetch("straten.json").then(r=>{if(!r.ok)throw new Error("http "+r.status);return r.json()}).then(j=>{
+    stratenIdx=j.s.map(r=>{
+      const n=norm(r[0]),oud=r[9]?norm(r[9]):"";
+      const plek=norm([j.ressorts[r[3]]||"",j.districten[r[4]]||""].join(" "));
+      return {naam:r[0],ruw:r[1]||r[0].toUpperCase(),ressort:j.ressorts[r[3]]||"",district:j.districten[r[4]]||"",box:[r[5],r[6],r[7],r[8]],oud:r[9]||"",
+        n,c:n.replace(/ /g,""),w:n.split(" "),on:oud,oc:oud.replace(/ /g,""),pw:plek?plek.split(" "):[],mx:(r[5]+r[7])/2,my:(r[6]+r[8])/2};
+    });
+    return stratenIdx;
+  }).catch(e=>{console.error(e);indexLaden=null;return null}).finally(()=>{bezig.index=false;toonBezig()});
+  return indexLaden;
+}
+
+// Levenshtein met plafond: stopt zodra het verschil groter wordt dan max
+function bewerkAfstand(a,b,max){
+  if(Math.abs(a.length-b.length)>max)return max+1;
+  let v=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const w=[i];let rijMin=i;
+    for(let j=1;j<=b.length;j++){w[j]=Math.min(v[j]+1,w[j-1]+1,v[j-1]+(a[i-1]===b[j-1]?0:1));if(w[j]<rijMin)rijMin=w[j]}
+    if(rijMin>max)return max+1;v=w;
+  }
+  return v[b.length];
+}
+// Hoe goed past de zoekvraag (woorden qw, aan elkaar qc) bij een naam (genormaliseerd n, aan elkaar c, woorden w)? 0 = niet.
+function past(qw,qc,n,c,w,fuzzy){
+  if(!c)return 0;
+  if(c.startsWith(qc))return 1000-c.length;
+  if(qw.every(q=>w.some(x=>x.startsWith(q))))return 850-c.length;
+  const i=c.indexOf(qc);if(i>=0)return 700-i-c.length/4;
+  if(!fuzzy||qc.length<4)return 0;
+  // tikfout: vergelijk met het begin van de naam en met het begin van elk woord erin (eerste of tweede letter moet kloppen)
+  const max=qc.length<6?1:qc.length<10?2:3;let best=max+1,start=0;
+  for(const x of w){
+    const deel=c.slice(start);start+=x.length;
+    if(deel[0]!==qc[0]&&deel[1]!==qc[1])continue;
+    for(const L of [qc.length-1,qc.length,qc.length+1]){if(L>deel.length)continue;const d=bewerkAfstand(qc,deel.slice(0,L),max);if(d<best)best=d}
+    if(best===0)break;
+  }
+  return best<=max?450-best*80-c.length/4:0;
+}
+function zoekStraten(q){
+  const qn=norm(q);if(!stratenIdx||qn.length<2)return [];
+  const qw=qn.split(" "),qc=qw.join(""),m=map.getCenter();
+  // Eerst exact (begin, woorden, deel van de naam); alleen als dat niets geeft ook met tikfouten
+  for(const fuzzy of [false,true]){
+    const uit=[];
+    for(const s of stratenIdx){
+      let sc=past(qw,qc,s.n,s.c,s.w,fuzzy),oud=false;
+      if(!sc&&s.oc){sc=past(qw,qc,s.on,s.oc,s.on.split(" "),fuzzy);if(sc){sc-=60;oud=true}}
+      // "magentaweg koewarasan": woorden die bij het ressort of district horen tellen als plaats
+      if(!sc&&!fuzzy&&qw.length>1){
+        const rest=qw.filter(q=>!(q.length>=3&&s.pw.some(p=>p.startsWith(q))));
+        if(rest.length&&rest.length<qw.length){sc=past(rest,rest.join(""),s.n,s.c,s.w,false);if(sc)sc+=120}
+      }
+      if(!sc)continue;
+      // dichter bij het kaartbeeld wint bij gelijke namen (1 punt per km, hooguit 80)
+      const km=Math.hypot((s.mx-m.lng)*110.6,(s.my-m.lat)*110.6);
+      uit.push({s,sc:sc-Math.min(km,80),oud});
+    }
+    if(uit.length)return uit.sort((a,b)=>b.sc-a.sc).slice(0,6);
+  }
+  return [];
+}
+function zoekPunten(q){
+  const qn=norm(q);if(!qn)return [];
+  const nr=qn.match(/^p?\s*(\d+)$/);
+  if(nr)return points.filter(p=>String(p.nr)===nr[1]);
+  if(qn.length<3)return [];
+  const qw=qn.split(" ");
+  return points.filter(p=>{const t=norm([p.notitie,(p.tags||[]).join(" "),soortNaam(p.soort),p.door].join(" "));return qw.every(q=>t.includes(q))}).sort((a,b)=>a.nr-b.nr).slice(0,3);
+}
+// Coördinaten zoals "5.79200, -55.22579" of "5,792 -55,226"
+function zoekCoord(q){
+  const g=q.match(/-?\d+[.,]\d+/g);if(!g||g.length!==2||q.replace(/-?\d+[.,]\d+/g,"").replace(/[\s,;]/g,""))return null;
+  let [a,b]=g.map(x=>parseFloat(x.replace(",",".")));if(Math.abs(a)>Math.abs(b))[a,b]=[b,a];
+  return Math.abs(a)<=90&&Math.abs(b)<=180?{lat:a,lng:b}:null;
+}
+
+// Vette letters op het stuk dat overeenkomt; spaties en streepjes tellen niet mee ("nieuwweer" → "Nieuw Weer")
+function markeer(tekst,q){
+  const qw=norm(q).split(" ").filter(Boolean);if(!qw.length)return esc(tekst);
+  const plat=tekst.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+  if(plat.length!==tekst.length)return esc(tekst);
+  const pos=[];let c="";
+  for(let i=0;i<plat.length;i++)if(/[a-z0-9]/.test(plat[i])){pos.push(i);c+=plat[i]}
+  const aan=new Array(tekst.length).fill(false);
+  const zet=w=>{const i=c.indexOf(w);if(i<0)return false;for(let k=i;k<i+w.length;k++)aan[pos[k]]=true;return true};
+  if(!zet(qw.join("")))qw.forEach(zet);
+  let h="",open=false;
+  for(let i=0;i<tekst.length;i++){if(aan[i]!==open){h+=aan[i]?"<b>":"</b>";open=aan[i]}h+=esc(tekst[i])}
+  return h+(open?"</b>":"");
+}
+const IC={
+  str:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19 8 5M20 19 16 5M12 6v2M12 11v2M12 16v2"/></svg>`,
+  pnt:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>`,
+  plaats:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"/><path d="M12 21c-4-4-7-7.3-7-11a7 7 0 1 1 14 0c0 3.7-3 7-7 11Z"/></svg>`,
+  coord:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>`,
+};
+const PLAATS_SOORT={canal:"Kanaal",river:"Rivier",stream:"Kreek",ditch:"Sloot",drain:"Afwatering",school:"School",college:"School",university:"Universiteit",hospital:"Ziekenhuis",clinic:"Kliniek",
+  place_of_worship:"Gebedshuis",supermarket:"Supermarkt",marketplace:"Markt",fuel:"Tankstation",police:"Politie",pharmacy:"Apotheek",restaurant:"Restaurant",bank:"Bank",
+  suburb:"Wijk",neighbourhood:"Buurt",village:"Dorp",hamlet:"Gehucht",town:"Plaats",city:"Stad",park:"Park",pitch:"Sportveld",stadium:"Stadion",bus_stop:"Bushalte",
+  primary:"Weg",secondary:"Weg",tertiary:"Weg",residential:"Straat",unclassified:"Weg",service:"Weg",track:"Pad",bridge:"Brug"};
+
+let plaatsen=[]; // laatste Photon-resultaten voor de huidige vraag
+function teken(q){
+  const sl=zoekStraten(q),pt=zoekPunten(q),co=zoekCoord(q);
+  const namen=new Set(sl.map(x=>x.s.n));
+  const pl=plaatsen.filter(p=>!(p.straat&&namen.has(norm(p.naam)))).slice(0,4);
+  keuzes=[];let h="";
+  const item=(k,cls,ic,titel,sub)=>{keuzes.push(k);const i=keuzes.length-1;return `<li role="option" id="sg${i}" data-i="${i}" class="${cls}" aria-selected="false">${ic}<span class="st"><span class="t">${titel}</span><span class="s">${sub}</span></span></li>`};
+  if(co)h+=item({soort:"coord",...co},"coord",IC.coord,`Ga naar ${co.lat.toFixed(5)}, ${co.lng.toFixed(5)}`,"Coördinaten");
+  sl.forEach(({s,oud})=>{h+=item({soort:"straat",s},"str",IC.str,markeer(s.naam,oud?"":q),esc([s.ressort,s.district,"Suriname"].filter(Boolean).join(", ")+(oud?` · vroeger ${s.oud}`:"")))});
+  if(pt.length){h+=`<li class="kop" role="presentation">Punten van de groep</li>`;
+    pt.forEach(p=>{h+=item({soort:"punt",p},"pnt",IC.pnt,`Punt ${p.nr} · ${esc(soortNaam(p.soort))}${p.ernst?" · "+ERN[p.ernst]:""}`,esc([(p.tags||[]).join(", "),p.notitie].filter(Boolean).join(" · ")||p.door||""))})}
+  if(pl.length){h+=`<li class="kop" role="presentation">Plaatsen (OpenStreetMap)</li>`;
+    pl.forEach(p=>{h+=item({soort:"plaats",p},"",IC.plaats,markeer(p.naam,q),esc(p.sub))})}
+  if(!keuzes.length){
+    const nogBezig=bezig.index||bezig.photon;
+    h=norm(q).length<2?"":`<li class="leeg" role="presentation">${nogBezig?"Zoeken…":"Niets gevonden. Probeer een deel van de naam."}</li>`;
+  }
+  zLijst.innerHTML=h;zLijst.hidden=!h;zIn.setAttribute("aria-expanded",String(!!h));
+  actief=-1;zIn.removeAttribute("aria-activedescendant");
+}
+function zetActief(i){
+  const li=zLijst.querySelectorAll("li[role=option]");if(!li.length)return;
+  actief=(i+li.length)%li.length;
+  li.forEach((x,k)=>x.setAttribute("aria-selected",String(k===actief)));
+  li[actief].scrollIntoView({block:"nearest"});zIn.setAttribute("aria-activedescendant",li[actief].id);
+}
+function sluitLijst(){zLijst.hidden=true;zIn.setAttribute("aria-expanded","false");actief=-1}
+
+// Photon pas na een korte pauze in het typen, en de vorige vraag afbreken
+function vraagPhoton(q){
+  clearTimeout(photonTimer);if(photonUit){photonUit.abort();photonUit=null}
+  plaatsen=[];bezig.photon=false;toonBezig();
+  if(norm(q).length<3||zoekCoord(q))return;
+  bezig.photon=true;toonBezig();
+  photonTimer=setTimeout(async()=>{
+    const ctl=new AbortController(),nr=zoekNr;photonUit=ctl;const t=setTimeout(()=>ctl.abort(),10000);
+    try{
+      const c=map.getCenter();
+      const r=await fetch("https://photon.komoot.io/api/?"+new URLSearchParams({q,limit:"10",bbox:"-58.1,1.8,-53.9,6.1",lat:c.lat.toFixed(4),lon:c.lng.toFixed(4)}),{signal:ctl.signal});
+      const j=await r.json();if(nr!==zoekNr)return;
+      // Photon raadt soms ver mis; alleen houden wat echt op de naam lijkt
+      const gezien=new Set(),qw=norm(q).split(" "),qc=qw.join("");
+      plaatsen=(j.features||[]).filter(f=>{const p=f.properties;if(p.countrycode!=="SR"||!p.name)return false;const n=norm(p.name);return past(qw,qc,n,n.replace(/ /g,""),n.split(" "),true)>0}).map(f=>{
+        const p=f.properties,soort=PLAATS_SOORT[p.osm_value]||"";
+        const waar=[...new Set([p.city||p.district,p.county,p.state].filter(Boolean))];
+        return {naam:p.name,sub:[soort,...waar,"Suriname"].filter(Boolean).join(", "),straat:p.osm_key==="highway",lat:f.geometry.coordinates[1],lng:f.geometry.coordinates[0],ext:p.extent};
+      }).filter(p=>{const k=norm(p.naam)+"|"+p.sub;if(gezien.has(k))return false;gezien.add(k);return true});
+    }catch(e){if(e.name!=="AbortError")console.warn("Photon:",e)}
+    finally{clearTimeout(t);if(photonUit===ctl){photonUit=null;bezig.photon=false;toonBezig();if(nr===zoekNr&&document.activeElement===zIn)teken(zIn.value)}}
+  },350);
+}
+
+zIn.addEventListener("focus",()=>{laadIndex().then(()=>{if(document.activeElement===zIn&&zIn.value.trim())teken(zIn.value)})});
+let tekenRaf=0;
+zIn.addEventListener("input",()=>{
+  const q=zIn.value;zoekNr++;$("searchClear").hidden=!q;
+  if(!stratenIdx)laadIndex().then(()=>{if(zIn.value===q)teken(q)});
+  // snel typen: één keer per beeld tekenen, met de laatste tekst
+  plaatsen=[];cancelAnimationFrame(tekenRaf);tekenRaf=requestAnimationFrame(()=>teken(zIn.value));vraagPhoton(q);
+});
+zIn.addEventListener("keydown",e=>{
+  if(e.key==="ArrowDown"){e.preventDefault();if(zLijst.hidden)teken(zIn.value);zetActief(actief+1)}
+  else if(e.key==="ArrowUp"){e.preventDefault();zetActief(actief-1)}
+  else if(e.key==="Escape"){if(!zLijst.hidden)sluitLijst();else zIn.blur()}
+});
+zIn.addEventListener("blur",()=>setTimeout(()=>{if(document.activeElement!==zIn)sluitLijst()},0));
+// Tikken in de lijst mag het toetsenbord/de focus niet wegnemen voordat de keuze telt
+zLijst.addEventListener("pointerdown",e=>e.preventDefault());
+zLijst.addEventListener("click",e=>{const li=e.target.closest("li[data-i]");if(li)kies(keuzes[+li.dataset.i])});
+$("searchClear").addEventListener("pointerdown",e=>e.preventDefault());
+$("searchClear").addEventListener("click",()=>{zIn.value="";zoekNr++;vraagPhoton("");searchLayer.clearLayers();$("searchClear").hidden=true;sluitLijst();zIn.focus()});
+
+async function kies(k){
+  if(!k)return;
+  sluitLijst();zIn.blur();map.closePopup();searchLayer.clearLayers();
+  if(geomUit){geomUit.abort();geomUit=null;bezig.geom=false;toonBezig()}
+  if(k.soort==="coord"){
+    L.circleMarker([k.lat,k.lng],{radius:9,color:"#000",weight:2,fillColor:"#ffd400",fillOpacity:1}).bindPopup(`${fmt(k.lat)}, ${fmt(k.lng)}`).addTo(searchLayer);
+    map.setView([k.lat,k.lng],Math.max(map.getZoom(),17));return;
+  }
+  if(k.soort==="punt"){zIn.value=`Punt ${k.p.nr}`;$("searchClear").hidden=false;map.setView([k.p.lat,k.p.lng],Math.max(map.getZoom(),18));openForm(k.p.id);return}
+  if(k.soort==="plaats"){
+    const p=k.p;zIn.value=p.naam;$("searchClear").hidden=false;
+    L.circleMarker([p.lat,p.lng],{radius:9,color:"#000",weight:2,fillColor:"#ffd400",fillOpacity:1}).bindPopup(`<b>${esc(p.naam)}</b><br>${esc(p.sub)}<div style="font-size:11px;color:#56665f;margin-top:4px">Bron: OpenStreetMap</div>`).addTo(searchLayer);
+    if(p.ext&&(p.ext[0]!==p.ext[2]||p.ext[1]!==p.ext[3]))map.fitBounds([[p.ext[1],p.ext[0]],[p.ext[3],p.ext[2]]],{padding:[40,40],maxZoom:17});
+    else map.setView([p.lat,p.lng],Math.max(map.getZoom(),17));
+    return;
+  }
+  // Straat: meteen naar de omhullende, daarna de lijn zelf geel ophalen bij MI-GLIS
+  const s=k.s,[x1,y1,x2,y2]=s.box;
+  zIn.value=s.naam;$("searchClear").hidden=false;
+  map.fitBounds([[y1,x1],[y2,x2]],{paddingTopLeft:[30,80],paddingBottomRight:[30,130],maxZoom:17});
+  const ctl=new AbortController();geomUit=ctl;bezig.geom=true;toonBezig();
   try{
-    const gj=await queryStreets(`UPPER(STREETNAME) LIKE '%${q}%'`);
+    const m=.0003;
+    const gj=await queryStreets(`STREETNAME='${s.ruw.replace(/'/g,"''")}'`,{geometry:[x1-m,y1-m,x2+m,y2+m].join(","),geometryType:"esriGeometryEnvelope",inSR:"4326",spatialRel:"esriSpatialRelIntersects"},ctl.signal);
+    if(geomUit!==ctl)return;
+    const sub=[s.ressort,s.district].filter(Boolean).join(", ");
+    L.geoJSON(gj,{style:{color:"#ffd400",weight:7,opacity:.85},onEachFeature:(f,ly)=>ly.bindPopup(`<b>${esc(s.naam)}</b>${sub?"<br>"+esc(sub):""}`)}).addTo(searchLayer);
+  }catch(e){if(e.name!=="AbortError")toast("Straat gevonden, maar de lijn laden lukt nu niet")}
+  finally{if(geomUit===ctl){geomUit=null;bezig.geom=false;toonBezig()}}
+}
+
+$("searchForm").addEventListener("submit",async ev=>{
+  ev.preventDefault();const q=zIn.value.trim();if(!q)return;
+  cancelAnimationFrame(tekenRaf);
+  if(actief>=0&&keuzes[actief]){kies(keuzes[actief]);return}
+  if(!stratenIdx)await laadIndex();
+  teken(q);if(keuzes.length){kies(keuzes[0]);return}
+  if(stratenIdx){toast(bezig.photon?"Nog aan het zoeken…":"Niets gevonden");return}
+  // Index niet beschikbaar (offline?): oude manier, rechtstreeks bij MI-GLIS
+  const Q=q.toUpperCase().replace(/'/g,"");if(Q.length<3){toast("Typ minstens 3 letters");return}
+  bezig.geom=true;toonBezig();
+  try{
+    const gj=await queryStreets(`UPPER(STREETNAME) LIKE '%${Q}%'`);
     searchLayer.clearLayers();
     if(!gj.features||!gj.features.length){toast("Geen straat gevonden");return}
     const l=L.geoJSON(gj,{style:{color:"#ffd400",weight:7,opacity:.85},onEachFeature:(f,ly)=>ly.bindPopup(`<b>${esc(f.properties.STREETNAME)}</b><br>${esc(f.properties.RESSORTNAM||"")}`)}).addTo(searchLayer);
-    map.fitBounds(l.getBounds(),{padding:[40,40],maxZoom:17});$("searchInput").blur();
+    map.fitBounds(l.getBounds(),{padding:[40,40],maxZoom:17});zIn.blur();
   }catch(e){toast("Zoeken lukt nu niet")}
+  finally{bezig.geom=false;toonBezig()}
 });
 
 /* ---------- percelen MI-GLIS ---------- */
