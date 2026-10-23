@@ -550,17 +550,21 @@ const zIn=$("searchInput"),zLijst=$("sugg");
 const norm=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
 let stratenIdx=null,indexLaden=null,zoekNr=0,keuzes=[],actief=-1,photonUit=null,photonTimer=0,geomUit=null;
 const bezig={index:false,photon:false,geom:false};
-const toonBezig=()=>{$("searchSpin").hidden=!(bezig.index||bezig.photon||bezig.geom)};
+// het laden van de index telt alleen mee als iemand in de zoekbalk zit (het vooraf laden gebeurt stil)
+const toonBezig=()=>{$("searchSpin").hidden=!((bezig.index&&document.activeElement===zIn)||bezig.photon||bezig.geom)};
 
 function laadIndex(){
   if(indexLaden)return indexLaden;
   bezig.index=true;toonBezig();
   indexLaden=fetch("straten.json").then(r=>{if(!r.ok)throw new Error("http "+r.status);return r.json()}).then(j=>{
+    // rij: [naam, MI-GLIS-naam, ressortnr, districtnr, x, y, breedte, hoogte, oude namen]; x/y in stappen vanaf x0,y0
+    const st=j.stap;
     stratenIdx=j.s.map(r=>{
-      const n=norm(r[0]),oud=r[9]?norm(r[9]):"";
-      const plek=norm([j.ressorts[r[3]]||"",j.districten[r[4]]||""].join(" "));
-      return {naam:r[0],ruw:r[1]||r[0].toUpperCase(),ressort:j.ressorts[r[3]]||"",district:j.districten[r[4]]||"",box:[r[5],r[6],r[7],r[8]],oud:r[9]||"",
-        n,c:n.replace(/ /g,""),w:n.split(" "),on:oud,oc:oud.replace(/ /g,""),pw:plek?plek.split(" "):[],mx:(r[5]+r[7])/2,my:(r[6]+r[8])/2};
+      const n=norm(r[0]),oud=r[8]?norm(r[8]):"";
+      const plek=norm([j.ressorts[r[2]]||"",j.districten[r[3]]||""].join(" "));
+      const x1=j.x0+r[4]/st,y1=j.y0+r[5]/st,box=[x1,y1,x1+r[6]/st,y1+r[7]/st];
+      return {naam:r[0],ruw:r[1]||r[0].toUpperCase(),ressort:j.ressorts[r[2]]||"",district:j.districten[r[3]]||"",box,oud:r[8]||"",
+        n,c:n.replace(/ /g,""),w:n.split(" "),on:oud,oc:oud.replace(/ /g,""),pw:plek?plek.split(" "):[],mx:(box[0]+box[2])/2,my:(box[1]+box[3])/2};
     });
     return stratenIdx;
   }).catch(e=>{console.error(e);indexLaden=null;return null}).finally(()=>{bezig.index=false;toonBezig()});
@@ -710,13 +714,15 @@ function vraagPhoton(q){
   },350);
 }
 
-zIn.addEventListener("focus",()=>{laadIndex().then(()=>{if(document.activeElement===zIn&&zIn.value.trim())teken(zIn.value)})});
-let tekenRaf=0;
+zIn.addEventListener("focus",()=>{toonBezig();laadIndex().then(()=>{if(document.activeElement===zIn&&zIn.value.trim())teken(zIn.value)})});
+// Index alvast laden als de kaart rustig klaar is, zodat hij er is als iemand begint te typen (niet bij databesparing)
+if(!navigator.connection?.saveData)addEventListener("load",()=>setTimeout(()=>(window.requestIdleCallback||setTimeout)(()=>laadIndex()),3000));
+let tekenTimer=0;
 zIn.addEventListener("input",()=>{
   const q=zIn.value;zoekNr++;$("searchClear").hidden=!q;
   if(!stratenIdx)laadIndex().then(()=>{if(zIn.value===q)teken(q)});
-  // snel typen: één keer per beeld tekenen, met de laatste tekst
-  plaatsen=[];cancelAnimationFrame(tekenRaf);tekenRaf=requestAnimationFrame(()=>teken(zIn.value));vraagPhoton(q);
+  // snel typen: pas tekenen na 30 ms zonder nieuwe letter, met de laatste tekst
+  plaatsen=[];clearTimeout(tekenTimer);tekenTimer=setTimeout(()=>teken(zIn.value),30);vraagPhoton(q);
 });
 zIn.addEventListener("keydown",e=>{
   if(e.key==="ArrowDown"){e.preventDefault();if(zLijst.hidden)teken(zIn.value);zetActief(actief+1)}
@@ -763,7 +769,7 @@ async function kies(k){
 
 $("searchForm").addEventListener("submit",async ev=>{
   ev.preventDefault();const q=zIn.value.trim();if(!q)return;
-  cancelAnimationFrame(tekenRaf);
+  clearTimeout(tekenTimer);
   if(actief>=0&&keuzes[actief]){kies(keuzes[actief]);return}
   if(!stratenIdx)await laadIndex();
   teken(q);if(keuzes.length){kies(keuzes[0]);return}

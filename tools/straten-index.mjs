@@ -100,16 +100,18 @@ for (const s of stukken) {
 
 const ressorts = [...new Set([...groepen.values()].map(g => g.ressort ? mooiRessort.get(sleutel(g.ressort)) || mooi(g.ressort) : ""))].sort();
 const districten = [...new Set([...groepen.values()].map(g => g.district))].sort();
-const r4 = v => Math.round(v * 1e4) / 1e4; // ~11 m, genoeg om naartoe te zoomen
-// Per straat: [naam, MI-GLIS-naam (leeg als gelijk aan naam in hoofdletters), MI-GLIS-ressort, ressortnr, districtnr, minx, miny, maxx, maxy, oude namen]
+// Omhullende als gehele getallen in stappen van 0,0001° (~11 m) vanaf de hoek x0,y0: kleiner bestand, genoeg om naartoe te zoomen
+const X0 = -58.1, Y0 = 1.8, STAP = 1e4;
+const doos = ([x1, y1, x2, y2]) => { const x = Math.floor((x1 - X0) * STAP), y = Math.floor((y1 - Y0) * STAP); return [x, y, Math.ceil((x2 - X0) * STAP) - x, Math.ceil((y2 - Y0) * STAP) - y]; };
+// Per straat: [naam, MI-GLIS-naam (leeg als gelijk aan naam in hoofdletters), ressortnr, districtnr, x, y, breedte, hoogte, oude namen]
 const s = [...groepen.values()].sort((a, b) => a.naam.localeCompare(b.naam)).map(g => {
   const n = mooi(g.naam), rm = g.ressort ? mooiRessort.get(sleutel(g.ressort)) || mooi(g.ressort) : "";
-  const rij = [n, g.naam === n.toUpperCase() ? "" : g.naam, g.ressort, ressorts.indexOf(rm), districten.indexOf(g.district), ...g.box.map(r4)];
+  const rij = [n, g.naam === n.toUpperCase() ? "" : g.naam, ressorts.indexOf(rm), districten.indexOf(g.district), ...doos(g.box)];
   const oud = [...g.oud].filter(o => sleutel(o) !== sleutel(g.naam)).map(mooi);
   if (oud.length) rij.push(oud.join(" / "));
   return rij;
 });
-const index = { gemaakt: new Date().toISOString().slice(0, 10), bron: "MI-GLIS Strpln", ressorts, districten, s };
+const index = { v: 2, gemaakt: new Date().toISOString().slice(0, 10), bron: "MI-GLIS Strpln", x0: X0, y0: Y0, stap: STAP, ressorts, districten, s };
 fs.writeFileSync(uit, JSON.stringify(index));
 console.log(`${s.length} straten, ${ressorts.length} ressorts, ${districten.length} districten → ${uit} (${(fs.statSync(uit).size / 1024).toFixed(0)} kB)`);
 const zonder = [...groepen.values()].filter(g => !g.district).length;
