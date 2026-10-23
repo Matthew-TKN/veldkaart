@@ -111,6 +111,7 @@ const s = [...groepen.values()].sort((a, b) => a.naam.localeCompare(b.naam)).map
   if (oud.length) rij.push(oud.join(" / "));
   return rij;
 });
+// v moet gelijk zijn aan INDEX_V in index.html; verander je het formaat, verhoog dan beide
 const index = { v: 2, gemaakt: new Date().toISOString().slice(0, 10), bron: "MI-GLIS Strpln", x0: X0, y0: Y0, stap: STAP, ressorts, districten, s };
 fs.writeFileSync(uit, JSON.stringify(index));
 console.log(`${s.length} straten, ${ressorts.length} ressorts, ${districten.length} districten → ${uit} (${(fs.statSync(uit).size / 1024).toFixed(0)} kB)`);

@@ -553,10 +553,14 @@ const bezig={index:false,photon:false,geom:false};
 // het laden van de index telt alleen mee als iemand in de zoekbalk zit (het vooraf laden gebeurt stil)
 const toonBezig=()=>{$("searchSpin").hidden=!((bezig.index&&document.activeElement===zIn)||bezig.photon||bezig.geom)};
 
+const INDEX_V=2; // ophogen als tools/straten-index.mjs een ander formaat schrijft
 function laadIndex(){
   if(indexLaden)return indexLaden;
   bezig.index=true;toonBezig();
-  indexLaden=fetch("straten.json").then(r=>{if(!r.ok)throw new Error("http "+r.status);return r.json()}).then(j=>{
+  // ?v= hoort bij het formaat: een oude straten.json uit de browsercache past niet bij deze code
+  const haal=opt=>fetch("straten.json?v="+INDEX_V,opt).then(r=>{if(!r.ok)throw new Error("http "+r.status);return r.json()});
+  indexLaden=haal().then(j=>j.v===INDEX_V?j:haal({cache:"reload"})).then(j=>{
+    if(j.v!==INDEX_V)throw new Error("straten.json heeft formaat "+j.v);
     // rij: [naam, MI-GLIS-naam, ressortnr, districtnr, x, y, breedte, hoogte, oude namen]; x/y in stappen vanaf x0,y0
     const st=j.stap;
     stratenIdx=j.s.map(r=>{
