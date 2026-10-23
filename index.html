@@ -720,7 +720,9 @@ function vraagPhoton(q){
 
 zIn.addEventListener("focus",()=>{toonBezig();laadIndex().then(()=>{if(document.activeElement===zIn&&zIn.value.trim())teken(zIn.value)})});
 // Index alvast laden als de kaart rustig klaar is, zodat hij er is als iemand begint te typen (niet bij databesparing)
-if(!navigator.connection?.saveData)addEventListener("load",()=>setTimeout(()=>(window.requestIdleCallback||setTimeout)(()=>laadIndex()),3000));
+if(!navigator.connection?.saveData)addEventListener("load",()=>setTimeout(()=>{
+  if(window.requestIdleCallback)requestIdleCallback(()=>laadIndex(),{timeout:4000});else laadIndex();
+},3000));
 let tekenTimer=0;
 zIn.addEventListener("input",()=>{
   const q=zIn.value;zoekNr++;$("searchClear").hidden=!q;
