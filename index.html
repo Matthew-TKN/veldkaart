@@ -41,7 +41,7 @@ body{background:var(--bg);color:var(--ink);font:15px/1.4 var(--f-ui);font-varian
 /* Suggesties onder de zoekbalk: straten (eigen index), punten van de groep en plaatsen (Photon / OpenStreetMap) */
 .zoek{flex:1;min-width:0;position:relative}
 .search .wis{color:var(--muted);font-size:1.35rem;font-weight:400;padding:0 6px}
-.spin{flex:none;align-self:center;width:18px;height:18px;margin:0 4px;border:2.5px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:draai .7s linear infinite}
+.laadrad{flex:none;align-self:center;width:18px;height:18px;margin:0 4px;border:2.5px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:draai .7s linear infinite}
 @keyframes draai{to{transform:rotate(360deg)}}
 .sugg{position:absolute;left:0;right:0;top:calc(100% + 6px);margin:0;padding:4px 0;list-style:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.28);max-height:min(62vh,460px);overflow:auto;overscroll-behavior:contain}
 .sugg li{display:flex;align-items:center;gap:10px;padding:8px 12px;min-height:50px;cursor:pointer}
@@ -194,7 +194,7 @@ body.foto .leaflet-top{top:env(safe-area-inset-top,0px)}
   <div class="zoek">
     <form class="search" id="searchForm" role="search">
       <input type="text" id="searchInput" placeholder="Zoek straat, plaats of punt…" aria-label="Zoek een straat, plaats of punt" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugg">
-      <span class="spin" id="searchSpin" hidden aria-hidden="true"></span>
+      <span class="laadrad" id="searchSpin" hidden aria-hidden="true"></span>
       <button type="button" class="wis" id="searchClear" hidden aria-label="Zoekveld leegmaken">×</button>
       <button type="submit">Zoek</button>
     </form>
